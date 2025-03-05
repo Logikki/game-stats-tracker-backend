@@ -1,0 +1,12 @@
+POST http://localhost:3000/api/new_nhl_game
+Content-Type: application/json
+
+{
+   "homeTeam": "Toronto Maple Leafs",
+   "awayTeam": "Montreal Canadiens",
+   "homePlayer": "exampleUser",
+   "awayPlayer": "hessuHopo",
+   "homeScore": 3,
+   "awayScore": 2,
+   "createdAt": "2025-03-05T19:30:00Z"
+}

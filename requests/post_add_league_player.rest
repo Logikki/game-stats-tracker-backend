@@ -1,0 +1,6 @@
+POST http://localhost:3000/api/league/user/67cc02f7c7b226810128a14a
+Content-Type: application/json
+
+{
+    "username": "mikkihiiri"
+}

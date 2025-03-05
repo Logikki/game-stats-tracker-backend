@@ -1,0 +1,4 @@
+GET http://localhost:3000/api/all_nhl_games
+Content-Type: application/json
+
+{ }

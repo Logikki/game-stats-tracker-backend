@@ -1,0 +1,16 @@
+POST http://localhost:3000/api/game
+Content-Type: application/json
+
+{
+   "gameType": "FIFA",
+   "league": "67cd5ce6776611125e102fc8",
+   "homeTeam": "Real Madrid",
+   "awayTeam": "PSG",
+   "homePlayer": "exampleUser",
+   "awayPlayer": "hessuHopo",
+   "homeScore": 3,
+   "awayScore": 2,
+   "createdAt": "2025-03-05T19:30:00Z",
+   "overTime": false,
+   "penalties": false
+}
