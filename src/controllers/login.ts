@@ -1,4 +1,3 @@
-import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
@@ -6,9 +5,7 @@ import { JWT_SECRET } from '../utils/config';
 import { User } from '@models/common/User';
 import { TokenPayload } from 'interfaces/TokenPayload';
 
-const loginRouter = express.Router();
-
-loginRouter.post('/login', async (request: Request, response: Response) => {
+export const login = async (request: Request, response: Response) => {
     const { username, password } = request.body;
     const user = await User.findOne({ username });
     console.log(user);
@@ -22,7 +19,9 @@ loginRouter.post('/login', async (request: Request, response: Response) => {
     const userForToken: TokenPayload = {
         name: user.name,
         username: user.username,
-        id: user.id
+        id: user.id,
+        matches: user.matches,
+        leagues: user.leagues
     };
 
     const token = jwt.sign(userForToken, JWT_SECRET, {
@@ -30,6 +29,4 @@ loginRouter.post('/login', async (request: Request, response: Response) => {
     });
 
     response.status(200).json({ token, username: user.username, name: user.name });
-});
-
-export default loginRouter;
+};

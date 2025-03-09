@@ -6,6 +6,7 @@ interface IUser extends Document {
     email: string;
     passwordHash: string;
     matches: { matchId: Types.ObjectId }[];
+    leagues: { leagueId: Types.ObjectId }[];
 }
 
 const userSchema: Schema = new Schema({
@@ -16,6 +17,11 @@ const userSchema: Schema = new Schema({
     matches: [
         {
             matchId: { type: Schema.Types.ObjectId, required: false, ref: 'BaseGame' }
+        }
+    ],
+    leagues: [
+        {
+            leagueId: { type: Schema.Types.ObjectId, required: false, ref: 'League' }
         }
     ]
 });

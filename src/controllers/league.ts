@@ -5,9 +5,7 @@ import { Types } from 'mongoose';
 import { CustomRequest } from '@utils/middleware';
 import { BaseGame } from '@models/common/BaseGame';
 
-const leagueRouter = express.Router();
-
-leagueRouter.post('/league', async (req: Request, res: Response) => {
+export const createLeague = async (req: Request, res: Response) => {
     const userIds = await resolveUsers(req.body.users);
     const admins = await resolveUsers(req.body.admins);
 
@@ -28,9 +26,9 @@ leagueRouter.post('/league', async (req: Request, res: Response) => {
     console.log(league);
     await league.save();
     res.status(201).json(league);
-});
+};
 
-leagueRouter.post('/league/user/:leagueId/', async (req: Request, res: Response) => {
+export const putUserToLeague =  async (req: Request, res: Response) => {
     const { leagueId } = req.params;
     const { username } = req.body;
 
@@ -51,9 +49,9 @@ leagueRouter.post('/league/user/:leagueId/', async (req: Request, res: Response)
     await league.save();
 
     res.status(200).json(league);
-});
+};
 
-leagueRouter.delete('/league/remove-game/:leagueId/:gameId', async (req: CustomRequest, res: Response) => {
+export const deleteGame = async (req: CustomRequest, res: Response) => {
     const { leagueId, gameId } = req.params;
     const league = await League.findById(leagueId);
     const user = req.user as IUser;
@@ -82,9 +80,9 @@ leagueRouter.delete('/league/remove-game/:leagueId/:gameId', async (req: CustomR
     } else {
         res.status(401).json({ message: 'User unauthorized to delete matches from this league' });
     }
-});
+};
 
-leagueRouter.delete('/league/delete/:leagueId/', async (req: CustomRequest, res: Response) => {
+export const deleteLeague = async (req: CustomRequest, res: Response) => {
     const leagueId = req.params.leagueId;
     const league = await League.findById(leagueId);
     const user = req.user as IUser;
@@ -108,11 +106,9 @@ leagueRouter.delete('/league/delete/:leagueId/', async (req: CustomRequest, res:
     } else {
         res.status(401).json({ message: 'User unauthorized to delete the league' });
     }
-});
+};
 
 const resolveUsers = async (usernames: string[]): Promise<{ userId: Types.ObjectId }[]> => {
     const users = await User.find({ username: { $in: usernames } }).lean();
     return users.map((user) => ({ userId: user._id as Types.ObjectId }));
 };
-
-export default leagueRouter;

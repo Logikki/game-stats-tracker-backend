@@ -1,12 +1,10 @@
-import express, { Express, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { User } from '@models/common/User';
 import { League } from '@models/league/League';
 import { GameType } from '@interfaces/GameType';
 import { BaseGame } from '@models/common/BaseGame';
 
-const gamesRouter = express.Router();
-
-gamesRouter.post('/game', async (req: Request, res: Response) => {
+export const createGame = async (req: Request, res: Response) => {
     const {
         homeTeam,
         awayTeam,
@@ -70,11 +68,9 @@ gamesRouter.post('/game', async (req: Request, res: Response) => {
     }
 
     res.status(201).json(game);
-});
+}
 
-gamesRouter.get('/games', async (_req: Request, res: Response) => {
+export const getGames = async (_req: Request, res: Response) => {
     const games = await BaseGame.find().populate('homePlayer awayPlayer');
     res.json(games);
-});
-
-export default gamesRouter;
+};
