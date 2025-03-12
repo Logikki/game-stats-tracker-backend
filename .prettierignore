@@ -22,3 +22,6 @@ dump.sql
 
 # Ignore generated files
 coverage
+
+# ignore tests
+*test*

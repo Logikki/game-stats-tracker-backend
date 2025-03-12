@@ -9,7 +9,8 @@ export const login = async (request: Request, response: Response) => {
     const { username, password } = request.body;
     const user = await User.findOne({ username });
     console.log(user);
-    const passwordCorrect = user && user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
+    const passwordCorrect =
+        user && user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
 
     if (!user || !passwordCorrect) {
         response.status(401).json({ error: 'invalid username or password' });

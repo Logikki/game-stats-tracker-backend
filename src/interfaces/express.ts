@@ -1,7 +1,7 @@
-import { Types } from "mongoose";
+import { Types } from 'mongoose';
 import { Request as ExpressRequest, NextFunction, Response } from 'express';
-import { IUser } from "@models/common/User";
-import { ILeague } from "@models/league/League";
+import { IUser } from '@models/common/User';
+import { ILeague } from '@models/league/League';
 
 export interface TokenPayload {
     username: string;

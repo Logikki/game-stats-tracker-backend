@@ -28,7 +28,7 @@ export const createLeague = async (req: Request, res: Response) => {
     res.status(201).json(league);
 };
 
-export const putUserToLeague =  async (req: Request, res: Response) => {
+export const putUserToLeague = async (req: Request, res: Response) => {
     const { leagueId } = req.params;
     const { username } = req.body;
 
@@ -89,7 +89,7 @@ export const deleteLeague: MiddleWare = async (req, res, next) => {
 
     console.log('LeagueRouter: Correct credentials, removing league');
     await League.findByIdAndDelete(leagueId);
-    res.status(204).end(); 
+    res.status(204).end();
 };
 
 const resolveUsers = async (usernames: string[]): Promise<{ userId: Types.ObjectId }[]> => {
