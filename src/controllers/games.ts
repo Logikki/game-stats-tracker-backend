@@ -3,6 +3,7 @@ import { User } from '@models/common/User';
 import { League } from '@models/league/League';
 import { GameType } from '@interfaces/GameType';
 import { BaseGame } from '@models/common/BaseGame';
+import { Types } from 'mongoose';
 
 export const createGame = async (req: Request, res: Response) => {
     const {
@@ -21,28 +22,38 @@ export const createGame = async (req: Request, res: Response) => {
     const userHomePlayer = await User.findOne({ username: homePlayer });
     const userAwayPlayer = await User.findOne({ username: awayPlayer });
     const leagueItem = await League.findOne({ _id: league });
-
+    
     if (
         !homeTeam ||
         !awayTeam ||
         !homePlayer ||
         !awayPlayer ||
         !createdAt ||
-        homeScore === undefined ||
-        awayScore === undefined ||
+        !homeScore ||
+        !awayScore ||
         !gameType
     ) {
         res.status(400).json({ error: 'All fields are required' });
         return;
     }
 
-    if (userHomePlayer === null || userAwayPlayer === null) {
+    if (!userHomePlayer || !userAwayPlayer) {
         res.status(404).json({ error: 'Could not resolve players by username' });
         return;
     }
 
     if (!Object.values(GameType).includes(gameType)) {
         res.status(400).json({ error: 'Invalid game type' });
+    }
+
+    //TODO: create own request for league games?
+    if (leagueItem) {
+        const isHomePlayerInLeague = leagueItem.users.some(user => user.userId.equals(userHomePlayer.id));
+        const isAwayPlayerInLeague = leagueItem.users.some(user => user.userId.equals(userAwayPlayer.id));
+        if (!isHomePlayerInLeague || !isAwayPlayerInLeague) {
+            res.status(400).json({ error: 'User is not in the league' });
+            return;
+        };
     }
 
     const game = new BaseGame({

@@ -13,6 +13,7 @@ describe('Game Creation Endpoints', () => {
     let mongoServer: MongoMemoryServer;
 
     let homeUser: any, awayUser: any;
+    let validGameData: any;
 
     beforeAll(async () => {
         mongoServer = await MongoMemoryServer.create();
@@ -40,6 +41,18 @@ describe('Game Creation Endpoints', () => {
             passwordHash: await hash('password', SALT_ROUNDS),
             matches: []
         });
+
+        validGameData = {
+            homeTeam: 'Team A',
+            awayTeam: 'Team B',
+            homePlayer: 'homeplayer',
+            awayPlayer: 'awayplayer',
+            homeScore: 3,
+            awayScore: 2,
+            createdAt: '2024-03-06T12:00:00Z',
+            overTime: false,
+            penalties: false
+        };
     });
 
     afterEach(async () => {
@@ -55,27 +68,18 @@ describe('Game Creation Endpoints', () => {
     });
 
     test('should create a new NHL game with valid data', async () => {
-        const gameData = {
-            gameType: GameType.NHL,
-            homeTeam: 'Team A',
-            awayTeam: 'Team B',
-            homePlayer: 'homeplayer',
-            awayPlayer: 'awayplayer',
-            homeScore: 3,
-            awayScore: 2,
-            createdAt: '2024-03-06T12:00:00Z',
-            overTime: false,
-            penalties: false
-        };
 
-        const response = await request(app).post('/api/game').send(gameData).expect(201);
+
+        const response = await request(app).post('/api/game')
+        .send({...validGameData, gameType: GameType.NHL})
+        .expect(201);
 
         expect(response.body.gameType).toBe(GameType.NHL);
         expect(response.body).toHaveProperty('_id');
-        expect(response.body.homeTeam).toBe(gameData.homeTeam);
-        expect(response.body.awayTeam).toBe(gameData.awayTeam);
-        expect(response.body.homeScore).toBe(gameData.homeScore);
-        expect(response.body.awayScore).toBe(gameData.awayScore);
+        expect(response.body.homeTeam).toBe(validGameData.homeTeam);
+        expect(response.body.awayTeam).toBe(validGameData.awayTeam);
+        expect(response.body.homeScore).toBe(validGameData.homeScore);
+        expect(response.body.awayScore).toBe(validGameData.awayScore);
         expect(response.body.homePlayer).toBe(homeUser.id);
         expect(response.body.awayPlayer).toBe(awayUser.id);
         expect(response.body.createdAt).toBeDefined();
@@ -84,33 +88,24 @@ describe('Game Creation Endpoints', () => {
     });
 
     test('should return 400 if required fields are missing for NHL game', async () => {
-        const response = await request(app).post('/api/game').send({ homeTeam: 'Team A' }).expect(400);
+        const response = await request(app).post('/api/game')
+        .send({ homeTeam: 'Team A', gameType: GameType.NHL })
+        .expect(400);
 
         expect(response.body).toHaveProperty('error');
     });
 
     test('should create a new FIFA game with valid data', async () => {
-        const gameData = {
-            gameType: GameType.FIFA,
-            homeTeam: 'Team X',
-            awayTeam: 'Team Y',
-            homePlayer: 'homeplayer',
-            awayPlayer: 'awayplayer',
-            homeScore: 4,
-            awayScore: 1,
-            createdAt: '2024-03-06T14:00:00Z',
-            overTime: true,
-            penalties: true
-        };
-
-        const response = await request(app).post('/api/game').send(gameData).expect(201);
+        const response = await request(app).post('/api/game')
+        .send({...validGameData, gameType: GameType.FIFA, overTime: true, penalties: true})
+        .expect(201);
 
         expect(response.body.gameType).toBe(GameType.FIFA);
         expect(response.body).toHaveProperty('_id');
-        expect(response.body.homeTeam).toBe(gameData.homeTeam);
-        expect(response.body.awayTeam).toBe(gameData.awayTeam);
-        expect(response.body.homeScore).toBe(gameData.homeScore);
-        expect(response.body.awayScore).toBe(gameData.awayScore);
+        expect(response.body.homeTeam).toBe(validGameData.homeTeam);
+        expect(response.body.awayTeam).toBe(validGameData.awayTeam);
+        expect(response.body.homeScore).toBe(validGameData.homeScore);
+        expect(response.body.awayScore).toBe(validGameData.awayScore);
         expect(response.body.homePlayer).toBe(homeUser.id);
         expect(response.body.awayPlayer).toBe(awayUser.id);
         expect(response.body.createdAt).toBeDefined();
@@ -177,8 +172,47 @@ describe('Game Creation Endpoints', () => {
     });
 
     test('should return 400 if required fields are missing for FIFA game', async () => {
-        const response = await request(app).post('/api/game').send({ homeTeam: 'Team X' }).expect(400);
+        const response = await request(app)
+        .post('/api/game').send({ homeTeam: 'Team X' })
+        .expect(400);
 
         expect(response.body).toHaveProperty('error');
+    });
+
+
+    test('should return 403 if user is missing', async () => {
+        const response = await request(app)
+        .post('/api/game')
+        .send({...validGameData, homePlayer: 'Ropert Pattinson', gameType: GameType.NHL})
+        .expect(404);
+
+        expect(response.body).toHaveProperty('error');
+    });
+
+    test('Users not in league should return 400 ', async () => {
+        const newLeague = await League.create({
+            name: 'Test League',
+            description: 'This is a test league',
+            gameTypes: [GameType.NHL],
+            admins: [{ userId: homeUser._id }],
+            users: [{ userId: homeUser._id }],
+            duration: '2025-12-31T23:59:59.000Z'
+        });
+
+        const gameData = {
+            gameType: GameType.NHL,
+            league: newLeague.id,
+            homeTeam: 'Team A',
+            awayTeam: 'Team B',
+            homePlayer: 'homeplayer',
+            awayPlayer: 'awayplayer',
+            homeScore: 3,
+            awayScore: 2,
+            createdAt: '2024-03-06T12:00:00Z',
+            overTime: false,
+            penalties: false
+        };
+
+        await request(app).post('/api/game').send(gameData).expect(400);
     });
 });

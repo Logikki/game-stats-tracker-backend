@@ -2,8 +2,8 @@ import express, { Request, Response } from 'express';
 import { League } from '@models/league/League';
 import { User, IUser } from '@models/common/User';
 import { Types } from 'mongoose';
-import { CustomRequest } from '@utils/middleware';
 import { BaseGame } from '@models/common/BaseGame';
+import { MiddleWare, TrackerApiRequest } from '@interfaces/express';
 
 export const createLeague = async (req: Request, res: Response) => {
     const userIds = await resolveUsers(req.body.users);
@@ -51,61 +51,45 @@ export const putUserToLeague =  async (req: Request, res: Response) => {
     res.status(200).json(league);
 };
 
-export const deleteGame = async (req: CustomRequest, res: Response) => {
-    const { leagueId, gameId } = req.params;
-    const league = await League.findById(leagueId);
-    const user = req.user as IUser;
-    const token = req.token;
+export const deleteGame: MiddleWare = async (req, res, next) => {
+    const gameId = req.params.gameId;
+    const league = req.league;
 
-    if (!token || !user) {
-        res.status(401).json({ error: 'invalid authorization' });
+    if (!req.isAdmin) {
+        res.status(401).json({ message: 'User unauthorized to delete matches from this league' });
         return;
     }
     if (!league) {
-        res.status(404).json({ message: 'league not found' });
+        res.status(404).json({ message: 'League not found' });
         return;
     }
 
-    const isAdmin = league.admins.find((admin) => admin.userId.equals(user.id)) != null;
-
-    if (isAdmin) {
-        console.log('LeagueRouter: Correct credentials, removing the game from league');
-        league.matches.map((match) => console.log(match, match.matchType));
-        const matches = league.matches.filter((match) => !match.matchId.equals(gameId));
-        league.matches = matches;
-        // there can be only one
-        await BaseGame.findByIdAndDelete(matches[0]);
-        await league.save();
-        res.status(204).end();
-    } else {
-        res.status(401).json({ message: 'User unauthorized to delete matches from this league' });
-    }
+    console.log('LeagueRouter: Correct credentials, removing the game from league');
+    league.matches.map((match) => console.log(match, match.matchType));
+    const matches = league.matches.filter((match) => !match.matchId.equals(gameId));
+    league.matches = matches;
+    // there can be only one
+    await BaseGame.findByIdAndDelete(matches[0]);
+    await league.save();
+    res.status(204).end();
 };
 
-export const deleteLeague = async (req: CustomRequest, res: Response) => {
+export const deleteLeague: MiddleWare = async (req, res, next) => {
     const leagueId = req.params.leagueId;
     const league = await League.findById(leagueId);
-    const user = req.user as IUser;
-    const token = req.token;
 
-    if (!token || !user) {
-        res.status(401).json({ error: 'invalid authorization' });
+    if (!req.isAdmin) {
+        res.status(401).json({ message: 'User unauthorized to delete matches from this league' });
         return;
     }
     if (!league) {
-        res.status(404).json({ message: 'league not found' });
+        res.status(404).json({ message: 'League not found' });
         return;
     }
 
-    const isAdmin = league.admins.find((admin) => admin.userId.equals(user.id)) != null;
-
-    if (isAdmin) {
-        console.log('LeagueRouter: Correct credentials, removing league');
-        await League.findByIdAndDelete(leagueId);
-        res.status(204).end();
-    } else {
-        res.status(401).json({ message: 'User unauthorized to delete the league' });
-    }
+    console.log('LeagueRouter: Correct credentials, removing league');
+    await League.findByIdAndDelete(leagueId);
+    res.status(204).end(); 
 };
 
 const resolveUsers = async (usernames: string[]): Promise<{ userId: Types.ObjectId }[]> => {
