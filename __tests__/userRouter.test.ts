@@ -1,9 +1,9 @@
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import app from '../../src/app';
-import { User } from '@models/common/User';
-import { GameType } from '@interfaces/GameType';
+import app from '../src/app';
+import { User } from '../src/models/common/User';
+import { GameType } from '../src/interfaces/GameType';
 
 describe('User Registration Endpoint', () => {
     let mongoServer: MongoMemoryServer;

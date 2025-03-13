@@ -1,0 +1,26 @@
+version: '3'
+services:
+  app:
+    container_name: game-stats-tracker-api
+    build:
+      context: .
+      target: ${NODE_ENV}
+    env_file:
+      - ./.env
+    environment:
+      PORT: ${PORT}
+      MONGO_DB_URI: ${MONGO_DB_URI}  # MongoDB URI, should be in .env
+      SECRET: ${SECRET}            # Secret for your application, should be in .env
+      JWT_SECRET: ${JWT_SECRET}    # JWT secret, should be in .env
+    networks:
+      - game-stats-tracker
+    volumes:
+      - .:/node/app
+      - /node/app/node_modules
+    ports:
+      - "3000:3000"  # Make sure the port is exposed
+    command: ["node", "dist/index.js"]
+
+networks:
+  game-stats-tracker:
+    driver: bridge

@@ -1,8 +1,8 @@
-import { createGame, getGames } from '@controllers/games';
-import { createLeague, deleteGame, deleteLeague, putUserToLeague } from '@controllers/leagues';
-import { login } from '@controllers/login';
-import { createUser } from '@controllers/users';
-import { attachUser, validateAdmin, validateToken } from '@utils/middleware';
+import { createGame, getGames } from './controllers/games';
+import { createLeague, deleteGame, deleteLeague, putUserToLeague } from './controllers/leagues';
+import { login } from './controllers/login';
+import { createUser } from './controllers/users';
+import { attachUser, validateAdmin, validateToken } from './utils/middleware';
 import { Router } from 'express';
 
 const router = Router();

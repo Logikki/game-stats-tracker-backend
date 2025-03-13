@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express';
-import { League } from '@models/league/League';
-import { User, IUser } from '@models/common/User';
+import { League } from '../models/league/League';
+import { User, IUser } from '../models/common/User';
 import { Types } from 'mongoose';
-import { BaseGame } from '@models/common/BaseGame';
-import { MiddleWare, TrackerApiRequest } from '@interfaces/express';
+import { BaseGame } from '../models/common/BaseGame';
+import { MiddleWare, TrackerApiRequest } from '../interfaces/express';
 
 export const createLeague = async (req: Request, res: Response) => {
     const userIds = await resolveUsers(req.body.users);

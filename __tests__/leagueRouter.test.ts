@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
-import app from '../../src/app';
+import app from '../src/app';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { User } from '@models/common/User';
+import { User } from '../src/models/common/User';
 import { hash } from 'bcrypt';
-import { SALT_ROUNDS } from '@utils/config';
-import { BaseGame } from '@models/common/BaseGame';
-import { League } from '@models/league/League';
-import { GameType } from '@interfaces/GameType';
+import { SALT_ROUNDS } from '../src/utils/config';
+import { BaseGame } from '../src/models/common/BaseGame';
+import { League } from '../src/models/league/League';
+import { GameType } from '../src/interfaces/GameType';
 
 describe('League Endpoints', () => {
     let mongoServer: MongoMemoryServer;

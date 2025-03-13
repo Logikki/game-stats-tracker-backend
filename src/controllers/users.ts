@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { User } from '@models/common/User';
-import { SALT_ROUNDS } from '@utils/config';
+import { User } from '../models/common/User';
+import { SALT_ROUNDS } from '../utils/config';
 import { hash } from 'bcrypt';
 
 export const createUser = async (req: Request, res: Response) => {

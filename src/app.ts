@@ -1,5 +1,5 @@
 import express, { Express } from 'express';
-import { MONGO_DB_URI } from '@utils/config';
+import { MONGO_DB_URI } from './utils/config';
 import { connect } from 'mongoose';
 import cors from 'cors';
 import router from './router';

@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { User } from '@models/common/User';
-import { League } from '@models/league/League';
-import { GameType } from '@interfaces/GameType';
-import { BaseGame } from '@models/common/BaseGame';
-import { Types } from 'mongoose';
+import { User } from '../models/common/User';
+import { League } from '../models/league/League';
+import { GameType } from '../interfaces/GameType';
+import { BaseGame } from '../models/common/BaseGame';
 
 export const createGame = async (req: Request, res: Response) => {
     const {

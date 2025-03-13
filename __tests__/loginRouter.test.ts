@@ -1,9 +1,9 @@
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import app from '../../src/app';
-import { User } from '@models/common/User';
-import { SALT_ROUNDS } from '@utils/config';
+import app from '../src/app';
+import { User } from '../src/models/common/User';
+import { SALT_ROUNDS } from '../src/utils/config';
 import { hash } from 'bcrypt';
 
 describe('Login Endpoint', () => {

@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
-import { GameType } from '@interfaces/GameType';
-import { LeagueMatch } from '@interfaces/LeagueMatch';
+import { GameType } from '../../interfaces/GameType';
+import { LeagueMatch } from '../../interfaces/LeagueMatch';
 
 interface ILeague extends Document {
     name: string;

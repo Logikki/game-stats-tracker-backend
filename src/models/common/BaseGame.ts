@@ -1,4 +1,4 @@
-import { GameType } from '@interfaces/GameType';
+import { GameType } from '../../interfaces/GameType';
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
 interface IBaseGame extends Document {

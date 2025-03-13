@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { IUser, User } from '@models/common/User';
-import { MiddleWare, TokenPayload, TrackerApiRequest } from '@interfaces/express';
+import { IUser, User } from '../models/common/User';
+import { MiddleWare, TokenPayload } from '../interfaces/express';
 import { JWT_SECRET } from './config';
-import { League } from '@models/league/League';
+import { League } from '../models/league/League';
 
 export const validateToken: MiddleWare = async (req, _, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
