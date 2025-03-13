@@ -7,7 +7,7 @@ import { TokenPayload } from '../interfaces/express';
 
 export const login = async (request: Request, response: Response) => {
     const { username, password } = request.body;
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).populate('matches leagues');
     console.log(user);
     const passwordCorrect =
         user && user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
@@ -26,7 +26,7 @@ export const login = async (request: Request, response: Response) => {
     };
 
     const token = jwt.sign(userForToken, JWT_SECRET, {
-        expiresIn: '1h'
+        expiresIn: '30d'
     });
 
     response.status(200).json({ token, username: user.username, name: user.name });

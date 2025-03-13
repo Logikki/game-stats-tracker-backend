@@ -3,11 +3,11 @@ Content-Type: application/json
 
 {
    "gameType": "NHL",
-   "league": "67cd5ce6776611125e102fc8",
+   "league": "67d2cb256c0279f4648cb6ed",
    "homeTeam": "Toronto Maple Leafs",
    "awayTeam": "Montreal Canadiens",
-   "homePlayer": "exampleUser",
-   "awayPlayer": "hessuHopo",
+   "homePlayer": "mikkihiiri",
+   "awayPlayer": "hessuhopo",
    "homeScore": 3,
    "awayScore": 2,
    "createdAt": "2025-03-05T19:30:00Z",

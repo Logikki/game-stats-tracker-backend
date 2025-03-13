@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { User } from '../models/common/User';
 import { SALT_ROUNDS } from '../utils/config';
 import { hash } from 'bcrypt';
+import { MiddleWare, TokenPayload } from 'src/interfaces/express';
 
 export const createUser = async (req: Request, res: Response) => {
     const { username, name, password, email } = req.body;
@@ -13,4 +14,23 @@ export const createUser = async (req: Request, res: Response) => {
     const user = new User({ username, name, email, passwordHash });
     await user.save();
     res.status(201).json(user);
+};
+
+export const getUser: MiddleWare = async (req, res, next) => {
+    const user = req.user;
+
+    if (!user) {
+        res.status(404).send('User not found');
+        return;
+    }
+
+    console.log(user);
+    const response: TokenPayload = {
+        name: user.name,
+        username: user.username,
+        id: user.id,
+        matches: user.matches,
+        leagues: user.leagues
+    };
+    res.status(200).json(response);
 };

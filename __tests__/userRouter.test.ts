@@ -4,9 +4,35 @@ import mongoose from 'mongoose';
 import app from '../src/app';
 import { User } from '../src/models/common/User';
 import { GameType } from '../src/interfaces/GameType';
+import { isExpression } from 'typescript';
 
 describe('User Registration Endpoint', () => {
     let mongoServer: MongoMemoryServer;
+    // Test data constants
+    let myUser: {
+        username: string;
+        name: string;
+        email: string;
+        password: string;
+        matches: any[];
+    };
+    let testUser: {
+        username: string;
+        name: string;
+        email: string;
+        password: string;
+        matches: any[];
+    };
+    let userIds: {
+        homePlayerId?: string;
+        awayPlayerId?: string;
+    };
+    let gameData: {
+        nhl: any;
+        fifa: any;
+    };
+
+    let authToken: string;
 
     beforeAll(async () => {
         mongoServer = await MongoMemoryServer.create();
@@ -15,6 +41,52 @@ describe('User Registration Endpoint', () => {
             useNewUrlParser: true,
             useUnifiedTopology: true
         } as any);
+    });
+
+    beforeEach(async () => {
+        myUser = {
+            username: 'myUser',
+            name: 'Test User',
+            email: 'test@example.com',
+            password: 'password123',
+            matches: []
+        };
+        testUser = {
+            username: 'testuser',
+            name: 'Test User',
+            email: 'test@example.com',
+            password: 'password123',
+            matches: []
+        };
+
+        userIds = {
+            homePlayerId: undefined,
+            awayPlayerId: undefined
+        };
+
+        // Base game data that will be used for both game types
+        const baseGameData = {
+            homeTeam: 'Team A',
+            awayTeam: 'Team B',
+            homePlayer: 'myUser',
+            awayPlayer: 'testuser',
+            homeScore: 3,
+            awayScore: 2,
+            createdAt: '2024-03-06T12:00:00Z',
+            overTime: false,
+            penalties: false
+        };
+
+        gameData = {
+            nhl: {
+                ...baseGameData,
+                gameType: GameType.NHL
+            },
+            fifa: {
+                ...baseGameData,
+                gameType: GameType.FIFA
+            }
+        };
     });
 
     afterEach(async () => {
@@ -27,42 +99,55 @@ describe('User Registration Endpoint', () => {
         await mongoServer.stop();
     });
 
-    test('should create a new user with valid data', async () => {
-        const newUser = {
-            username: 'testuser',
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password123',
-            matches: []
-        };
+    // Helper function to create users
+    const createUsers = async () => {
+        const myUserResponse = await request(app)
+            .post('/api/user')
+            .send(myUser)
+            .expect(201);
 
-        const response = await request(app).post('/api/user').send(newUser).expect(201);
+        userIds.homePlayerId = myUserResponse.body.id;
+
+        const testUserResponse = await request(app)
+            .post('/api/user')
+            .send(testUser)
+            .expect(201);
+
+        userIds.awayPlayerId = testUserResponse.body.id;
+
+        return { myUserResponse, testUserResponse };
+    };
+
+    test('should create a new user with valid data', async () => {
+        const response = await request(app)
+            .post('/api/user')
+            .send(testUser)
+            .expect(201);
 
         expect(response.body).toHaveProperty('id');
-        expect(response.body.username).toBe(newUser.username);
-        expect(response.body.email).toBe(newUser.email);
+        expect(response.body.username).toBe(testUser.username);
+        expect(response.body.email).toBe(testUser.email);
         expect(response.body).not.toHaveProperty('passwordHash');
     });
 
     test('should return 400 if required fields are missing', async () => {
-        const response = await request(app).post('/api/user').send({ username: 'testuser' }).expect(400);
+        const response = await request(app)
+            .post('/api/user')
+            .send({ username: 'testuser' })
+            .expect(400);
 
         expect(response.body).toHaveProperty('error');
     });
 
     test('should hash the password before saving', async () => {
-        const password = 'password123';
-
-        const newUser = {
-            username: 'secureuser',
-            name: 'Secure User',
-            email: 'secure@example.com',
-            password,
-            matches: []
-        };
-
-        await request(app).post('/api/user').send(newUser).expect(201);
-        const savedUser = await User.findOne({ username: 'secureuser' });
+        const password = testUser.password;
+        
+        await request(app)
+            .post('/api/user')
+            .send(testUser)
+            .expect(201);
+        
+        const savedUser = await User.findOne({ username: testUser.username });
 
         expect(savedUser).not.toBeNull();
         expect(savedUser!.passwordHash).not.toBe(password);
@@ -70,94 +155,77 @@ describe('User Registration Endpoint', () => {
     });
 
     test('Adding nhl matches updates users matches', async () => {
-        const myUser = {
-            username: 'myUser',
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password123',
-            matches: []
-        };
+        const { myUserResponse, testUserResponse } = await createUsers();
 
-        const newUser = {
-            username: 'testuser',
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password123',
-            matches: []
-        };
+        expect(myUserResponse.body.id).toBeDefined();
+        expect(testUserResponse.body.id).toBeDefined();
 
-        const myUSerResponse = await request(app).post('/api/user').send(myUser).expect(201);
+        const response = await request(app)
+            .post('/api/game')
+            .send(gameData.nhl)
+            .expect(201);
 
-        expect(myUSerResponse.body.id).toBeDefined();
-        const homePlayerID = myUSerResponse.body.id;
-
-        const newUerResponse = await request(app).post('/api/user').send(newUser).expect(201);
-
-        expect(newUerResponse.body.id).toBeDefined();
-        const awayPlayerID = newUerResponse.body.id;
-
-        const nhlGame = {
-            gameType: GameType.NHL,
-            homeTeam: 'Team A',
-            awayTeam: 'Team B',
-            homePlayer: 'myUser',
-            awayPlayer: 'testuser',
-            homeScore: 3,
-            awayScore: 2,
-            createdAt: '2024-03-06T12:00:00Z',
-            overTime: false,
-            penalties: false
-        };
-
-        const response = await request(app).post('/api/game').send(nhlGame).expect(201);
-
-        expect(response.body.homePlayer).toBe(homePlayerID);
-        expect(response.body.awayPlayer).toBe(awayPlayerID);
+        expect(response.body.homePlayer).toBe(userIds.homePlayerId);
+        expect(response.body.awayPlayer).toBe(userIds.awayPlayerId);
     });
 
     test('Adding fifa matches updates users matches', async () => {
-        const myUser = {
-            username: 'myUser',
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password123',
-            matches: []
-        };
+        const { myUserResponse, testUserResponse } = await createUsers();
 
-        const newUser = {
-            username: 'testuser',
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password123',
-            matches: []
-        };
+        expect(myUserResponse.body.id).toBeDefined();
+        expect(testUserResponse.body.id).toBeDefined();
 
-        const myUSerResponse = await request(app).post('/api/user').send(myUser).expect(201);
+        const response = await request(app)
+            .post('/api/game')
+            .send(gameData.fifa)
+            .expect(201);
 
-        expect(myUSerResponse.body.id).toBeDefined();
-        const homePlayerID = myUSerResponse.body.id;
-
-        const newUerResponse = await request(app).post('/api/user').send(newUser).expect(201);
-
-        expect(newUerResponse.body.id).toBeDefined();
-        const awayPlayerID = newUerResponse.body.id;
-
-        const fifaGame = {
-            gameType: GameType.FIFA,
-            homeTeam: 'Team A',
-            awayTeam: 'Team B',
-            homePlayer: 'myUser',
-            awayPlayer: 'testuser',
-            homeScore: 3,
-            awayScore: 2,
-            createdAt: '2024-03-06T12:00:00Z',
-            overTime: false,
-            penalties: false
-        };
-
-        const response = await request(app).post('/api/game').send(fifaGame).expect(201);
-
-        expect(response.body.homePlayer).toBe(homePlayerID);
-        expect(response.body.awayPlayer).toBe(awayPlayerID);
+        expect(response.body.homePlayer).toBe(userIds.homePlayerId);
+        expect(response.body.awayPlayer).toBe(userIds.awayPlayerId);
     });
+
+    test('Get user succeeds if logged in', async () => {
+        await request(app)
+            .post('/api/user')
+            .send(myUser)
+            .expect(201);
+        
+        const loginResponse = await request(app)
+            .post('/api/login')
+            .send({ username: myUser.username, password: myUser.password })
+            .expect(200);
+    
+        authToken = loginResponse.body.token;
+
+        const response = await request(app)
+            .get('/api/user')
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+
+        expect(response.body.username).toEqual(myUser.username);
+        expect(response.body.name).toEqual(myUser.name);
+        expect(response.body.matches).toEqual([]);
+        expect(response.body.leagues).toEqual([]);
+        expect(response.body.id).toBeDefined();
+        });
+
+    test('Get user fails  if no logged in', async () => {
+        await request(app)
+            .post('/api/user')
+            .send(myUser)
+            .expect(201);
+
+        // Login and get auth token
+        const loginResponse = await request(app)
+            .post('/api/login')
+            .send({ username: myUser.username, password: myUser.password })
+            .expect(200);
+    
+        authToken = loginResponse.body.token;
+
+        const response = await request(app)
+            .get('/api/user')
+            .set('Authorization', `Bearer safasf`)
+            .expect(403);
+        });
 });

@@ -3,11 +3,11 @@ Content-Type: application/json
 
 {
    "gameType": "FIFA",
-   "league": "67cd5ce6776611125e102fc8",
+   "league": "67d2dbe06f5c2dd262b34b7b",
    "homeTeam": "Real Madrid",
    "awayTeam": "PSG",
-   "homePlayer": "exampleUser",
-   "awayPlayer": "hessuHopo",
+   "homePlayer": "hessuhopo",
+   "awayPlayer": "mikkihiiri",
    "homeScore": 3,
    "awayScore": 2,
    "createdAt": "2025-03-05T19:30:00Z",

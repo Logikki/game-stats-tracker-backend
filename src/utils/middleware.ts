@@ -11,23 +11,22 @@ export const validateToken: MiddleWare = async (req, _, next) => {
 };
 
 export const attachUser: MiddleWare = async (req, res, next) => {
-    if (!req.token) {
-        res.status(401).json({ message: 'Authentication error' });
-        next(Error('Authentication error'));
-        return;
-    }
-    const decodedToken = jwt.verify(req.token, JWT_SECRET as string) as TokenPayload;
-    const user = await User.findById(decodedToken.id);
-    if (user != null) {
+    try {
+        if (!req.token) {
+            res.status(403).json({ message: 'Authentication error' });
+            return next(Error('Authentication error'));
+        }
+        const decodedToken = jwt.verify(req.token, JWT_SECRET as string) as TokenPayload;
+        const user = await User.findById(decodedToken.id);
         req.user = user;
-    } else {
-        res.status(404).json({ message: 'User not found' });
+        next();
+    } catch (err) {
+        res.status(403).json({ message: 'Authentication error' });
     }
-    next();
 };
 
 export const validateAdmin: MiddleWare = async (req, res, next) => {
-    const user = req.user as IUser;
+    const user = req.user;
     const league = await League.findById(req.params.leagueId);
 
     if (!user) {
@@ -35,11 +34,17 @@ export const validateAdmin: MiddleWare = async (req, res, next) => {
         return;
     }
     if (!league) {
+        console.log('league not found', league);
         res.status(404).json({ message: 'league not found' });
         return;
     }
 
     const isAdmin = league.admins.find((admin) => admin.userId.equals(user.id)) != null;
+
+    if (!isAdmin) {
+        res.status(403).json({ message: 'Authentication error' });
+        return;
+    }
 
     req.isAdmin = isAdmin;
     req.league = league;

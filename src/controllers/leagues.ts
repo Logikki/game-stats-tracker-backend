@@ -3,7 +3,7 @@ import { League } from '../models/league/League';
 import { User, IUser } from '../models/common/User';
 import { Types } from 'mongoose';
 import { BaseGame } from '../models/common/BaseGame';
-import { MiddleWare, TrackerApiRequest } from '../interfaces/express';
+import { MiddleWare } from '../interfaces/express';
 
 export const createLeague = async (req: Request, res: Response) => {
     const userIds = await resolveUsers(req.body.users);
@@ -22,30 +22,30 @@ export const createLeague = async (req: Request, res: Response) => {
         duration: req.body.duration,
         gameTypes: req.body.gameTypes
     });
-
     console.log(league);
+
+    userIds.map(async (id) => {
+        await User.findByIdAndUpdate(id.userId, { $push: { leagues: league._id } });
+    });
+
     await league.save();
     res.status(201).json(league);
 };
 
-export const putUserToLeague = async (req: Request, res: Response) => {
-    const { leagueId } = req.params;
+export const putUserToLeague: MiddleWare = async (req, res, next) => {
     const { username } = req.body;
+    const league = req.league;
+    const user = await User.findOne({ username: username });
 
-    const user = await User.findOne({ username: username }).lean();
-
-    if (!user) {
-        res.status(404).json({ message: 'User not found' });
+    if (!league || !user) {
+        res.status(404).json({ message: 'Missing required fields' });
         return;
     }
 
-    const league = await League.findById(leagueId);
-    if (!league) {
-        res.status(401).json({ message: 'League not found' });
-        return;
-    }
+    user.leagues.push({ leagueId: league.id });
+    await user.save();
 
-    league.users.push({ userId: user._id as Types.ObjectId });
+    league.users.push({ userId: user.id });
     await league.save();
 
     res.status(200).json(league);
@@ -54,41 +54,46 @@ export const putUserToLeague = async (req: Request, res: Response) => {
 export const deleteGame: MiddleWare = async (req, res, next) => {
     const gameId = req.params.gameId;
     const league = req.league;
+    const matchItem = await BaseGame.findById(gameId);
 
-    if (!req.isAdmin) {
-        res.status(401).json({ message: 'User unauthorized to delete matches from this league' });
-        return;
-    }
-    if (!league) {
-        res.status(404).json({ message: 'League not found' });
+    if (!league || !matchItem) {
+        res.status(404).json({ message: 'Missing required fields' });
         return;
     }
 
     console.log('LeagueRouter: Correct credentials, removing the game from league');
-    league.matches.map((match) => console.log(match, match.matchType));
+
+    const awayPlayer = (await User.findById(matchItem.awayPlayer)) as IUser;
+    const homePlayer = (await User.findById(matchItem.homePlayer)) as IUser;
+    awayPlayer.matches = awayPlayer!.matches.filter(
+        (match) => !match.toString().includes(matchItem.id)
+    );
+    homePlayer.matches = homePlayer!.matches.filter(
+        (match) => !match.toString().includes(matchItem.id)
+    );
+
     const matches = league.matches.filter((match) => !match.matchId.equals(gameId));
     league.matches = matches;
-    // there can be only one
-    await BaseGame.findByIdAndDelete(matches[0]);
+
+    await homePlayer?.save();
+    await awayPlayer?.save();
     await league.save();
+
+    await BaseGame.findByIdAndDelete(matchItem.id);
+
     res.status(204).end();
 };
 
 export const deleteLeague: MiddleWare = async (req, res, next) => {
-    const leagueId = req.params.leagueId;
-    const league = await League.findById(leagueId);
+    const league = req.league;
 
-    if (!req.isAdmin) {
-        res.status(401).json({ message: 'User unauthorized to delete matches from this league' });
-        return;
-    }
     if (!league) {
         res.status(404).json({ message: 'League not found' });
         return;
     }
 
     console.log('LeagueRouter: Correct credentials, removing league');
-    await League.findByIdAndDelete(leagueId);
+    await League.findByIdAndDelete(league.id);
     res.status(204).end();
 };
 

@@ -4,10 +4,10 @@ Content-Type: application/json
 {
     "name": "Champions League",
     "gameTypes": ["FIFA"],
-    "admins": ["hessuHopo", "exampleUser"],
+    "admins": ["hessuhopo", "mikkihiiri"],
     "users": [
-        "hessuHopo",
-        "exampleUser"
+        "hessuhopo",
+        "mikkihiiri"
     ],
     "duration": "2025-12-31T23:59:59.000Z"
 }
