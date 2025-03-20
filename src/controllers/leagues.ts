@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { League } from '../models/league/League';
 import { User, IUser } from '../models/common/User';
 import { Types } from 'mongoose';
@@ -25,7 +25,7 @@ export const createLeague = async (req: Request, res: Response) => {
     console.log(league);
 
     userIds.map(async (id) => {
-        await User.findByIdAndUpdate(id.userId, { $push: { leagues: league._id } });
+        await User.findByIdAndUpdate(id, { $push: { leagues: league._id } });
     });
 
     await league.save();
@@ -42,10 +42,10 @@ export const putUserToLeague: MiddleWare = async (req, res, next) => {
         return;
     }
 
-    user.leagues.push({ leagueId: league.id });
+    user.leagues.push(league.id);
     await user.save();
 
-    league.users.push({ userId: user.id });
+    league.users.push(user.id);
     await league.save();
 
     res.status(200).json(league);
@@ -72,7 +72,7 @@ export const deleteGame: MiddleWare = async (req, res, next) => {
         (match) => !match.toString().includes(matchItem.id)
     );
 
-    const matches = league.matches.filter((match) => !match.matchId.equals(gameId));
+    const matches = league.matches.filter((mId) => !mId.toString().includes(gameId));
     league.matches = matches;
 
     await homePlayer?.save();
@@ -97,7 +97,7 @@ export const deleteLeague: MiddleWare = async (req, res, next) => {
     res.status(204).end();
 };
 
-const resolveUsers = async (usernames: string[]): Promise<{ userId: Types.ObjectId }[]> => {
+const resolveUsers = async (usernames: string[]): Promise<Types.ObjectId[]> => {
     const users = await User.find({ username: { $in: usernames } }).lean();
-    return users.map((user) => ({ userId: user._id as Types.ObjectId }));
+    return users.map((user) => (user._id as Types.ObjectId));
 };

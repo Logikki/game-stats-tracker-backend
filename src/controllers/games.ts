@@ -48,10 +48,10 @@ export const createGame = async (req: Request, res: Response) => {
     //TODO: create own request for league games?
     if (leagueItem) {
         const isHomePlayerInLeague = leagueItem.users.some((user) =>
-            user.userId.equals(userHomePlayer.id)
+            user.equals(userHomePlayer.id)
         );
         const isAwayPlayerInLeague = leagueItem.users.some((user) =>
-            user.userId.equals(userAwayPlayer.id)
+            user.equals(userAwayPlayer.id)
         );
         if (!isHomePlayerInLeague || !isAwayPlayerInLeague) {
             res.status(400).json({ error: 'User is not in the league' });
@@ -79,7 +79,7 @@ export const createGame = async (req: Request, res: Response) => {
     if (leagueItem != null) {
         console.log('Adding game to league');
         await leagueItem.updateOne({
-            $push: { matches: { matchId: game.id, matchType: GameType.NHL } }
+            $push: { matches: game.id }
         });
     }
 
@@ -87,6 +87,8 @@ export const createGame = async (req: Request, res: Response) => {
 };
 
 export const getGames = async (_req: Request, res: Response) => {
-    const games = await BaseGame.find().populate('homePlayer awayPlayer');
+    const games = await BaseGame.find()
+        .populate({ path: 'homePlayer', select: 'name' })
+        .populate({ path: 'awayPlayer', select: 'name' });
     res.json(games);
 };

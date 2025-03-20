@@ -48,8 +48,8 @@ describe('League Endpoints', () => {
             name: 'Test League',
             description: 'League for testing',
             gameTypes: ['NHL'],
-            admins: [{ userId: testUser._id }], // Test user is the admin
-            users: [{ userId: testUser._id }, { userId: testUser2._id }],
+            admins: [testUser._id], // Test user is the admin
+            users: [testUser._id, testUser2._id],
             duration: '2025-12-31T23:59:59.000Z',
             matches: []
         });
@@ -67,7 +67,7 @@ describe('League Endpoints', () => {
             createdAt: Date.now()
         });
 
-        league.matches.push({ matchId: nhlGame._id, matchType: GameType.NHL });
+        league.matches.push(nhlGame._id);
         testUser.matches.push(nhlGame);
         testUser2.matches.push(nhlGame);
         await league.save();
@@ -116,9 +116,9 @@ describe('League Endpoints', () => {
 
         expect(createdLeague.name).toEqual(leagueData.name);
         expect(createdLeague.gameTypes).toEqual(leagueData.gameTypes);
-        expect(createdLeague.admins[0].userId).toContain(testUser.id);
-        expect(createdLeague.users[0].userId).toContain(testUser.id);
-        expect(createdLeague.users[1].userId).toContain(testUser2.id);
+        expect(createdLeague.admins[0]).toEqual(testUser.id);
+        expect(createdLeague.users[0]).toEqual(testUser.id);
+        expect(createdLeague.users[1]).toEqual(testUser2.id);
         expect(createdLeague.duration).toEqual(leagueData.duration);
 
         const updatedUser = await User.findById(testUser.id);
@@ -144,7 +144,7 @@ describe('League Endpoints', () => {
             .expect(200);
 
         const updatedUser = await User.findById(hessuHopo.id);
-        expect(updatedUser?.leagues[0].leagueId.toString()).toEqual(league._id.toString());
+        expect(updatedUser?.leagues[0]._id).toEqual(league._id);
     });
 
     test ('Add user insuccessfully if not admin, does not update user', async () => {

@@ -25,12 +25,28 @@ export const getUser: MiddleWare = async (req, res, next) => {
     }
 
     console.log(user);
-    const response: TokenPayload = {
-        name: user.name,
-        username: user.username,
-        id: user.id,
-        matches: user.matches,
-        leagues: user.leagues
-    };
+    const response = await User.findById(user.id)
+        .populate("leagues")
+        .populate({
+            path: "matches",
+            populate: [
+            { path: "homePlayer", model: "User", select: 'username' },
+            { path: "awayPlayer", model: "User", select: 'username' }
+            ]
+        })
     res.status(200).json(response);
+};
+
+export const getUsers: MiddleWare = async (req, res, next) => {
+    const users = await User.find()
+        .populate("leagues")
+        .populate({
+            path: "matches",
+            populate: [
+              { path: "homePlayer", model: "User", select: 'name' },
+              { path: "awayPlayer", model: "User", select: 'name' }
+            ]
+          })
+        .exec();
+    res.status(201).json(users);
 };

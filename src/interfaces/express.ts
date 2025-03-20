@@ -7,8 +7,6 @@ export interface TokenPayload {
     username: string;
     name: string;
     id: string;
-    matches: { matchId: Types.ObjectId }[];
-    leagues: { leagueId: Types.ObjectId }[];
 }
 
 export interface TrackerApiRequest extends ExpressRequest {

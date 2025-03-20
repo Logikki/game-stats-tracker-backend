@@ -20,9 +20,7 @@ export const login = async (request: Request, response: Response) => {
     const userForToken: TokenPayload = {
         name: user.name,
         username: user.username,
-        id: user.id,
-        matches: user.matches,
-        leagues: user.leagues
+        id: user.id
     };
 
     const token = jwt.sign(userForToken, JWT_SECRET, {

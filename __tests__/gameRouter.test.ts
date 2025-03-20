@@ -144,8 +144,8 @@ describe('Game Creation Endpoints', () => {
             name: 'Test League',
             description: 'This is a test league',
             gameTypes: [GameType.NHL],
-            admins: [{ userId: homeUser._id }],
-            users: [{ userId: homeUser._id }, { userId: awayUser._id }],
+            admins: [homeUser._id],
+            users: [homeUser._id, awayUser._id],
             duration: '2025-12-31T23:59:59.000Z'
         });
 
@@ -168,7 +168,7 @@ describe('Game Creation Endpoints', () => {
 
         expect(response.body).toHaveProperty('_id');
         expect(response.body.league).toBe(newLeague.id);
-        expect(updatedLeague?.matches[0].matchId.toString()).toEqual(response.body._id);
+        expect(updatedLeague?.matches[0]._id.toString()).toEqual(response.body._id.toString());
     });
 
     test('should return 400 if required fields are missing for FIFA game', async () => {
@@ -194,8 +194,8 @@ describe('Game Creation Endpoints', () => {
             name: 'Test League',
             description: 'This is a test league',
             gameTypes: [GameType.NHL],
-            admins: [{ userId: homeUser._id }],
-            users: [{ userId: homeUser._id }],
+            admins: [homeUser._id],
+            users: [homeUser._id],
             duration: '2025-12-31T23:59:59.000Z'
         });
 

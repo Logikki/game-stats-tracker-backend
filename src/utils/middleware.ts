@@ -39,7 +39,7 @@ export const validateAdmin: MiddleWare = async (req, res, next) => {
         return;
     }
 
-    const isAdmin = league.admins.find((admin) => admin.userId.equals(user.id)) != null;
+    const isAdmin = league.admins.find((admin) => admin.toString().includes(user.id)) != null;
 
     if (!isAdmin) {
         res.status(403).json({ message: 'Authentication error' });

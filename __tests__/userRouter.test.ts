@@ -184,11 +184,12 @@ describe('User Registration Endpoint', () => {
         expect(response.body.awayPlayer).toBe(userIds.awayPlayerId);
     });
 
-    test('Get user succeeds if logged in', async () => {
-        await request(app)
-            .post('/api/user')
-            .send(myUser)
-            .expect(201);
+    test('Get user succeeds if logged in, correct response values', async () => {
+        const { myUserResponse, testUserResponse } = await createUsers();
+
+        const gameResponse = await request(app).post('/api/game')
+            .send(gameData.nhl)
+            .expect(201);        
         
         const loginResponse = await request(app)
             .post('/api/login')
@@ -197,16 +198,30 @@ describe('User Registration Endpoint', () => {
     
         authToken = loginResponse.body.token;
 
-        const response = await request(app)
+        const userResponse = await request(app)
             .get('/api/user')
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
 
-        expect(response.body.username).toEqual(myUser.username);
-        expect(response.body.name).toEqual(myUser.name);
-        expect(response.body.matches).toEqual([]);
-        expect(response.body.leagues).toEqual([]);
-        expect(response.body.id).toBeDefined();
+        const body = userResponse.body;
+
+        expect(body.username).toEqual(myUser.username);
+        expect(body.name).toEqual(myUser.name);
+        expect(body._id).toEqual(myUserResponse.body._id);
+        expect(body.leagues).toBeDefined();
+        
+        expect(body.matches.length).toBe(1);
+        expect(body.matches[0]._id).toBe(gameResponse.body._id);
+
+        expect(body.matches[0].homePlayer.username).toBe(myUserResponse.body.username);
+        expect(body.matches[0].homePlayer._id).toBe(myUserResponse.body._id);
+        expect(body.matches[0].homePlayer.leagues).toBeUndefined();
+        expect(body.matches[0].homePlayer.matches).toBeUndefined();
+
+        expect(body.matches[0].awayPlayer.username).toBe(testUserResponse.body.username);
+        expect(body.matches[0].awayPlayer._id).toBe(testUserResponse.body._id);
+        expect(body.matches[0].awayPlayer.leagues).toBeUndefined();
+        expect(body.matches[0].awayPlayer.matches).toBeUndefined();
         });
 
     test('Get user fails  if no logged in', async () => {
@@ -218,12 +233,12 @@ describe('User Registration Endpoint', () => {
         // Login and get auth token
         const loginResponse = await request(app)
             .post('/api/login')
-            .send({ username: myUser.username, password: myUser.password })
-            .expect(200);
+            .send({ username: myUser.username, password: "wrong pass" })
+            .expect(401);
     
         authToken = loginResponse.body.token;
 
-        const response = await request(app)
+        await request(app)
             .get('/api/user')
             .set('Authorization', `Bearer safasf`)
             .expect(403);

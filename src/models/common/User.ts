@@ -1,12 +1,12 @@
-import mongoose, { Schema, Document, Model, Types } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 interface IUser extends Document {
     username: string;
     name: string;
     email: string;
     passwordHash: string;
-    matches: { matchId: Types.ObjectId }[];
-    leagues: { leagueId: Types.ObjectId }[];
+    matches: Types.ObjectId[];
+    leagues: Types.ObjectId[];
 }
 
 const userSchema: Schema = new Schema<IUser>({
@@ -16,12 +16,12 @@ const userSchema: Schema = new Schema<IUser>({
     passwordHash: { type: String, required: true },
     matches: [
         {
-            matchId: { type: Schema.Types.ObjectId, required: false, ref: 'BaseGame', _id: false }
+            type: Types.ObjectId, required: false, ref: 'BaseGame'
         }
     ],
     leagues: [
         {
-            leagueId: { type: Schema.Types.ObjectId, required: false, ref: 'League', _id: false }
+            type: Types.ObjectId, required: false, ref: 'League'
         }
     ]
 });
