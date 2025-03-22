@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
-import { IUser, User } from '../models/common/User';
+import { User } from '../models/common/User';
 import { MiddleWare, TokenPayload } from '../interfaces/express';
 import { JWT_SECRET } from './config';
 import { League } from '../models/league/League';
+import { Invitation } from '../models/Invitation';
 
 export const validateToken: MiddleWare = async (req, _, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -28,7 +29,6 @@ export const attachUser: MiddleWare = async (req, res, next) => {
 export const validateAdmin: MiddleWare = async (req, res, next) => {
     const user = req.user;
     const league = await League.findById(req.params.leagueId);
-
     if (!user) {
         res.status(401).json({ error: 'could not find user' });
         return;
@@ -47,6 +47,40 @@ export const validateAdmin: MiddleWare = async (req, res, next) => {
     }
 
     req.isAdmin = isAdmin;
+    req.league = league;
+    next();
+};
+
+export const validateLeagueInvitation: MiddleWare = async (req, res, next) => {
+    const user = req.user;
+    const code = req.params.invitationCode;
+    const invitation = await Invitation.findOne({ code });
+    if (!invitation || invitation?.used) {
+        console.log('invalid invitation or invitation is already used');
+        return res.status(403).json({ message: 'league not found' });
+    }
+    invitation.used = true;
+    await invitation.save();
+
+    const league = await League.findById(invitation.league._id);
+
+    if (!league) {
+        console.log('invitation is corrupt');
+        return res.status(404).json({ message: 'corrupt invitation' });
+    }
+
+    if (!user) {
+        return res.status(401).json({ error: 'could not find user' });
+    }
+
+    if (league.users.includes(user.id)) {
+        return res.status(400).json({ message: 'user is already a member of this league' });
+    }
+
+    if (new Date() > invitation.expiresAt) {
+        return res.status(403).json({ message: 'invitation is expired' });
+    }
+
     req.league = league;
     next();
 };

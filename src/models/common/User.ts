@@ -16,12 +16,16 @@ const userSchema: Schema = new Schema<IUser>({
     passwordHash: { type: String, required: true },
     matches: [
         {
-            type: Types.ObjectId, required: false, ref: 'BaseGame'
+            type: Types.ObjectId,
+            required: false,
+            ref: 'BaseGame'
         }
     ],
     leagues: [
         {
-            type: Types.ObjectId, required: false, ref: 'League'
+            type: Types.ObjectId,
+            required: false,
+            ref: 'League'
         }
     ]
 });

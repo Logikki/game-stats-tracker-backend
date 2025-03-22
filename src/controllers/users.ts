@@ -26,27 +26,38 @@ export const getUser: MiddleWare = async (req, res, next) => {
 
     console.log(user);
     const response = await User.findById(user.id)
-        .populate("leagues")
         .populate({
-            path: "matches",
+            path: 'leagues',
             populate: [
-            { path: "homePlayer", model: "User", select: 'username' },
-            { path: "awayPlayer", model: "User", select: 'username' }
+                { path: 'users', model: 'User', select: 'name' },
+                { path: 'matches', model: 'BaseGame' }
             ]
         })
+        .populate({
+            path: 'matches',
+            populate: [
+                { path: 'homePlayer', model: 'User', select: 'username' },
+                { path: 'awayPlayer', model: 'User', select: 'username' }
+            ]
+        });
     res.status(200).json(response);
 };
 
-export const getUsers: MiddleWare = async (req, res, next) => {
+export const getUsers: MiddleWare = async (_req, res, _next) => {
     const users = await User.find()
-        .populate("leagues")
         .populate({
-            path: "matches",
+            path: 'leagues',
             populate: [
-              { path: "homePlayer", model: "User", select: 'name' },
-              { path: "awayPlayer", model: "User", select: 'name' }
+                { path: 'users', model: 'User', select: 'name' },
+                { path: 'matches', model: 'BaseGame' }
             ]
-          })
-        .exec();
+        })
+        .populate({
+            path: 'matches',
+            populate: [
+                { path: 'homePlayer', model: 'User', select: 'username' },
+                { path: 'awayPlayer', model: 'User', select: 'username' }
+            ]
+        });
     res.status(201).json(users);
 };

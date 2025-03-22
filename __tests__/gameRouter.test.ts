@@ -68,8 +68,6 @@ describe('Game Creation Endpoints', () => {
     });
 
     test('should create a new NHL game with valid data', async () => {
-
-
         const response = await request(app).post('/api/game')
         .send({...validGameData, gameType: GameType.NHL})
         .expect(201);

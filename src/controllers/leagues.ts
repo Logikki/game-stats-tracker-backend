@@ -99,5 +99,5 @@ export const deleteLeague: MiddleWare = async (req, res, next) => {
 
 const resolveUsers = async (usernames: string[]): Promise<Types.ObjectId[]> => {
     const users = await User.find({ username: { $in: usernames } }).lean();
-    return users.map((user) => (user._id as Types.ObjectId));
+    return users.map((user) => user._id as Types.ObjectId);
 };

@@ -16,7 +16,7 @@ const LeagueSchema: Schema = new Schema({
     description: { type: String, required: false },
     gameTypes: [{ type: String, enum: Object.values(GameType), required: true }],
     users: [{ type: Schema.Types.ObjectId, ref: 'User', required: false, _id: false }],
-    admins: [{type: Schema.Types.ObjectId, ref: 'User', required: true, _id: false }],
+    admins: [{ type: Schema.Types.ObjectId, ref: 'User', required: true, _id: false }],
     matches: [{ type: Schema.Types.ObjectId, required: false, ref: 'BaseGame', _id: false }],
     duration: { type: Date, required: true }
 });
