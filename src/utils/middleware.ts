@@ -55,6 +55,7 @@ export const validateLeagueInvitation: MiddleWare = async (req, res, next) => {
     const user = req.user;
     const code = req.params.invitationCode;
     const invitation = await Invitation.findOne({ code });
+
     if (!invitation || invitation?.used) {
         console.log('invalid invitation or invitation is already used');
         return res.status(403).json({ message: 'league not found' });

@@ -43,7 +43,7 @@ export const getUser: MiddleWare = async (req, res, next) => {
     res.status(200).json(response);
 };
 
-export const getUsers: MiddleWare = async (_req, res, _next) => {
+export const getUsers: MiddleWare = async (_req, res, _) => {
     const users = await User.find()
         .populate({
             path: 'leagues',

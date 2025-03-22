@@ -1,9 +1,9 @@
-import { MiddleWare } from 'src/interfaces/express';
-import { IInvitation, Invitation } from '../models/Invitation';
-import { v4 as uuidv4 } from 'uuid';
-import { League } from '../models/league/League';
+import { MiddleWare } from "src/interfaces/express";
+import { IInvitation, Invitation } from "../models/Invitation";
+import { v4 as uuidv4 } from "uuid";
+import { League } from "../models/league/League";
 
-export const createLeagueInvitation: MiddleWare = async (req, res, next) => {
+export const createLeagueInvitation: MiddleWare = async (req, res, _) => {
     const league = req.league;
     const invitedBy = req.user;
 
@@ -27,9 +27,9 @@ export const createLeagueInvitation: MiddleWare = async (req, res, next) => {
     await invitation.save();
 
     res.status(201).json({ code: invitationCode });
-};
+}
 
-export const acceptLeagueInvitation: MiddleWare = async (req, res, next) => {
+export const acceptLeagueInvitation: MiddleWare = async (req, res, _) => {
     const user = req.user;
     const league = req.league;
 
@@ -37,16 +37,15 @@ export const acceptLeagueInvitation: MiddleWare = async (req, res, next) => {
         res.status(404).json({ message: 'Invalid invitation' });
         return;
     }
-
-    console.log(
-        'invitation is valid and user is not a member of the league, adding them to the league'
-    );
-
+    
+    console.log("invitation is valid and user is not a member of the league, adding them to the league")
+    
     league.users.push(user.id);
     user.leagues.push(league.id);
     await league.save();
     await user.save();
 
-    const response = await League.find({ league }).populate;
+    const response = await League.find({ league })
+    .populate
     res.status(200).json(league);
-};
+}

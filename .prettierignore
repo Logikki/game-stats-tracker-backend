@@ -25,3 +25,5 @@ coverage
 
 # ignore tests
 *test*
+
+.github/*

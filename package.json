@@ -13,7 +13,7 @@
         "clean": "shx rm -rf node_modules/ build/ dist/ out/ package-lock.json *.log",
         "build": "npm install && npx tsc",
         "start": "npm run build && node dist/index.js",
-        "format": "npx prettier --write src/*",
+        "format": "npx prettier . --write src/*",
         "start:docker": "docker-compose up"
     },
     "keywords": [],

@@ -2,10 +2,11 @@ POST http://localhost:3000/api/game
 Content-Type: application/json
 
 {
+   "league": "67dc044390b25dc828fbbc48",
    "gameType": "FIFA",
    "homeTeam": "Liverpool",
    "awayTeam": "PSG",
-   "homePlayer": "hessuhopo",
+   "homePlayer": "realdestruction",
    "awayPlayer": "mikkihiiri",
    "homeScore": 3,
    "awayScore": 2,

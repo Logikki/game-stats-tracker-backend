@@ -51,7 +51,7 @@ export const putUserToLeague: MiddleWare = async (req, res, next) => {
     res.status(200).json(league);
 };
 
-export const deleteGame: MiddleWare = async (req, res, next) => {
+export const deleteGame: MiddleWare = async (req, res, _) => {
     const gameId = req.params.gameId;
     const league = req.league;
     const matchItem = await BaseGame.findById(gameId);
@@ -84,7 +84,7 @@ export const deleteGame: MiddleWare = async (req, res, next) => {
     res.status(204).end();
 };
 
-export const deleteLeague: MiddleWare = async (req, res, next) => {
+export const deleteLeague: MiddleWare = async (req, res, _) => {
     const league = req.league;
 
     if (!league) {
