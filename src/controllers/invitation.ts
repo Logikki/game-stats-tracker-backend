@@ -1,5 +1,5 @@
-import { MiddleWare } from "src/interfaces/express";
-import { IInvitation, Invitation } from "../models/Invitation";
+import { MiddleWare } from "../common/interfaces/express";
+import { Invitation } from "../models/Invitation";
 import { v4 as uuidv4 } from "uuid";
 import { League } from "../models/league/League";
 
@@ -45,7 +45,13 @@ export const acceptLeagueInvitation: MiddleWare = async (req, res, _) => {
     await league.save();
     await user.save();
 
-    const response = await League.find({ league })
-    .populate
-    res.status(200).json(league);
+    const response = await league
+        .populate({
+            path: 'matches',
+            populate: [
+                { path: 'homePlayer', model: 'User', select: 'username' },
+                { path: 'awayPlayer', model: 'User', select: 'username' }
+            ]
+        });
+    res.status(200).json(response);
 }

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { User } from '../models/common/User';
 import { SALT_ROUNDS } from '../utils/config';
 import { hash } from 'bcrypt';
-import { MiddleWare, TokenPayload } from 'src/interfaces/express';
+import { MiddleWare, TokenPayload } from 'src/common/interfaces/express';
 
 export const createUser = async (req: Request, res: Response) => {
     const { username, name, password, email } = req.body;
@@ -25,14 +25,14 @@ export const getUser: MiddleWare = async (req, res, next) => {
     }
 
     console.log(user);
-    const response = await User.findById(user.id)
+    const response = await (await user
         .populate({
             path: 'leagues',
             populate: [
                 { path: 'users', model: 'User', select: 'name' },
                 { path: 'matches', model: 'BaseGame' }
             ]
-        })
+        }))
         .populate({
             path: 'matches',
             populate: [

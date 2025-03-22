@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
-import { GameType } from '../../interfaces/GameType';
+import { GameType } from '../../common/enums/GameType';
 
 interface ILeague extends Document {
     name: string;

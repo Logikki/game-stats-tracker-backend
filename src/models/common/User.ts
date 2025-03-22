@@ -1,9 +1,11 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
+import { ProfileVisibility } from '../../common/enums/ProfileVisibility';
 
 interface IUser extends Document {
     username: string;
     name: string;
     email: string;
+    profileVisibility: string;
     passwordHash: string;
     matches: Types.ObjectId[];
     leagues: Types.ObjectId[];
@@ -14,6 +16,7 @@ const userSchema: Schema = new Schema<IUser>({
     name: { type: String, required: true },
     email: { type: String, required: true },
     passwordHash: { type: String, required: true },
+    profileVisibility: { type: String, enum: ProfileVisibility, default: ProfileVisibility.Private },
     matches: [
         {
             type: Types.ObjectId,

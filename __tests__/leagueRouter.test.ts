@@ -7,7 +7,7 @@ import { hash } from 'bcrypt';
 import { SALT_ROUNDS } from '../src/utils/config';
 import { BaseGame } from '../src/models/common/BaseGame';
 import { League } from '../src/models/league/League';
-import { GameType } from '../src/interfaces/GameType';
+import { GameType } from '../src/common/enums/GameType';
 
 describe('League Endpoints', () => {
     let mongoServer: MongoMemoryServer;

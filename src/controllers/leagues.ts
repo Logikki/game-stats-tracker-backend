@@ -3,7 +3,7 @@ import { League } from '../models/league/League';
 import { User, IUser } from '../models/common/User';
 import { Types } from 'mongoose';
 import { BaseGame } from '../models/common/BaseGame';
-import { MiddleWare } from '../interfaces/express';
+import { MiddleWare } from '../common/interfaces/express';
 
 export const createLeague = async (req: Request, res: Response) => {
     const userIds = await resolveUsers(req.body.users);
@@ -47,8 +47,16 @@ export const putUserToLeague: MiddleWare = async (req, res, next) => {
 
     league.users.push(user.id);
     await league.save();
-
-    res.status(200).json(league);
+    
+    const response = await league
+        .populate({
+            path: 'matches',
+            populate: [
+                { path: 'homePlayer', model: 'User', select: 'username' },
+                { path: 'awayPlayer', model: 'User', select: 'username' }
+            ]
+        });
+    res.status(200).json(response);
 };
 
 export const deleteGame: MiddleWare = async (req, res, _) => {

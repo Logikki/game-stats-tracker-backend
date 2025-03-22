@@ -3,7 +3,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import app from '../src/app';
 import { User } from '../src/models/common/User';
-import { GameType } from '../src/interfaces/GameType';
+import { GameType } from '../src/common/enums/GameType';
 import { isExpression } from 'typescript';
 
 describe('User Registration Endpoint', () => {

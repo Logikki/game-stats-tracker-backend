@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/common/User';
-import { MiddleWare, TokenPayload } from '../interfaces/express';
+import { MiddleWare, TokenPayload } from '../common/interfaces/express';
 import { JWT_SECRET } from './config';
 import { League } from '../models/league/League';
 import { Invitation } from '../models/Invitation';
