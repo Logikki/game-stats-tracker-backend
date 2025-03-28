@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { User } from '../models/User/User';
-import { League } from '../models/league/League';
+import { IUser, User } from '../models/User/User';
+import { ILeague, League } from '../models/league/League';
 import { GameType } from '../common/enums/GameType';
 import { BaseGame } from '../models/Games/BaseGame';
+import { MiddleWare } from 'src/common/interfaces/express';
 
 export const createGame = async (req: Request, res: Response) => {
     const {
@@ -76,7 +77,7 @@ export const createGame = async (req: Request, res: Response) => {
     await game.save();
     await userHomePlayer.updateOne({ $push: { matches: game } });
     await userAwayPlayer.updateOne({ $push: { matches: game } });
-    if (leagueItem != null) {
+    if (leagueItem) {
         console.log('Adding game to league');
         await leagueItem.updateOne({
             $push: { matches: game.id }
@@ -91,4 +92,44 @@ export const getGames = async (_req: Request, res: Response) => {
         .populate({ path: 'homePlayer', select: 'name' })
         .populate({ path: 'awayPlayer', select: 'name' });
     res.json(games);
+};
+
+export const deleteGame: MiddleWare = async (req, res, _) => {
+    const gameId = req.params.gameId;
+    const matchItem = await BaseGame.findById(gameId);
+
+    if (!matchItem) {
+        res.status(404).json({ message: 'Cant find given game' });
+        return;
+    }
+
+    console.log('LeagueRouter: Correct credentials, removing the game from league');
+
+    const awayPlayer = (await User.findById(matchItem.awayPlayer)) as IUser;
+    const homePlayer = (await User.findById(matchItem.homePlayer)) as IUser;
+    const league = (await League.findById(matchItem.league)) as ILeague;
+
+    awayPlayer.matches = awayPlayer!.matches.filter(
+        (match) => !match.toString().includes(matchItem.id)
+    );
+    homePlayer.matches = homePlayer!.matches.filter(
+        (match) => !match.toString().includes(matchItem.id)
+    );
+
+    if (league) {
+        await deleteGameFromLeague(matchItem.id, league);
+    }
+
+    await homePlayer?.save();
+    await awayPlayer?.save();
+    await BaseGame.findByIdAndDelete(matchItem.id);
+
+    res.status(204).end();
+};
+
+const deleteGameFromLeague = async (match: string, league: ILeague) => {
+    console.log('delete game from league');
+    const matches = league.matches.filter((mId) => !mId.toString().includes(match));
+    league.matches = matches;
+    await league.save();
 };

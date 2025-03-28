@@ -4,6 +4,7 @@ import { MiddleWare, TokenPayload } from '../common/interfaces/express';
 import { JWT_SECRET } from './config';
 import { League } from '../models/league/League';
 import { Invitation } from '../models/Invitation';
+import { BaseGame } from '../models/Games/BaseGame';
 
 export const validateToken: MiddleWare = async (req, _, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -48,6 +49,26 @@ export const validateAdmin: MiddleWare = async (req, res, next) => {
 
     req.isAdmin = isAdmin;
     req.league = league;
+    next();
+};
+
+export const validateUserIsPartOfGame: MiddleWare = async (req, res, next) => {
+    const user = req.user;
+    const gameId = req.params.gameId;
+    const gameItem = await BaseGame.findById(gameId);
+    if (!gameItem || !user) {
+        res.status(401).json({ error: 'could not find user or game' });
+        return;
+    }
+    const isPartOfGame =
+        gameItem.homePlayer.toString().includes(user.id) ||
+        gameItem.awayPlayer.toString().includes(user.id);
+
+    if (!isPartOfGame) {
+        res.status(403).json({ message: 'user has no permission to delete the game' });
+        return;
+    }
+    req.game = gameItem;
     next();
 };
 

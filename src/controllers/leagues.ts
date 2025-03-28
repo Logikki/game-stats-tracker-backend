@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { League } from '../models/league/League';
 import { User, IUser } from '../models/User/User';
 import { Types } from 'mongoose';
-import { BaseGame } from '../models/Games/BaseGame';
 import { MiddleWare } from '../common/interfaces/express';
 
 export const createLeague = async (req: Request, res: Response) => {
@@ -56,39 +55,6 @@ export const putUserToLeague: MiddleWare = async (req, res, next) => {
         ]
     });
     res.status(200).json(response);
-};
-
-export const deleteGame: MiddleWare = async (req, res, _) => {
-    const gameId = req.params.gameId;
-    const league = req.league;
-    const matchItem = await BaseGame.findById(gameId);
-
-    if (!league || !matchItem) {
-        res.status(404).json({ message: 'Missing required fields' });
-        return;
-    }
-
-    console.log('LeagueRouter: Correct credentials, removing the game from league');
-
-    const awayPlayer = (await User.findById(matchItem.awayPlayer)) as IUser;
-    const homePlayer = (await User.findById(matchItem.homePlayer)) as IUser;
-    awayPlayer.matches = awayPlayer!.matches.filter(
-        (match) => !match.toString().includes(matchItem.id)
-    );
-    homePlayer.matches = homePlayer!.matches.filter(
-        (match) => !match.toString().includes(matchItem.id)
-    );
-
-    const matches = league.matches.filter((mId) => !mId.toString().includes(gameId));
-    league.matches = matches;
-
-    await homePlayer?.save();
-    await awayPlayer?.save();
-    await league.save();
-
-    await BaseGame.findByIdAndDelete(matchItem.id);
-
-    res.status(204).end();
 };
 
 export const deleteLeague: MiddleWare = async (req, res, _) => {

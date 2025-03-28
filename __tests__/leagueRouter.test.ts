@@ -13,10 +13,12 @@ describe('League Endpoints', () => {
     let mongoServer: MongoMemoryServer;
     let testUser: any;
     let testUser2: any;
+    let randomUser: any;
     let league: any;
     let nhlGame: any;
     let authToken: string;
     let unauthorizedToken: string;
+    let randomUserAuthToken: string
 
     beforeAll(async () => {
         jest.setTimeout(10000); // Increase Jest timeout to 10 seconds
@@ -44,11 +46,18 @@ describe('League Endpoints', () => {
             passwordHash: await hash('password123', SALT_ROUNDS)
         });
 
+        randomUser = await User.create({
+            username: 'random user',
+            name: 'random randalin',
+            email: 'extra@example.com',
+            passwordHash: await hash('password123', SALT_ROUNDS)
+        });
+
         league = await League.create({
             name: 'Test League',
             description: 'League for testing',
             gameTypes: ['NHL'],
-            admins: [testUser._id], // Test user is the admin
+            admins: [testUser._id],
             users: [testUser._id, testUser2._id],
             duration: '2025-12-31T23:59:59.000Z',
             matches: []
@@ -58,6 +67,7 @@ describe('League Endpoints', () => {
             gameType: GameType.NHL,
             homeTeam: 'Team A',
             awayTeam: 'Team B',
+            league: league._id,
             homePlayer: testUser._id,
             awayPlayer: testUser2._id,
             homeScore: 3,
@@ -88,6 +98,13 @@ describe('League Endpoints', () => {
             .expect(200);
 
         unauthorizedToken = unauthorizedLoginResponse.body.token;
+
+        const randLoginResponse = await request(app)
+            .post('/api/login')
+            .send({ username: randomUser.username, password: 'password123' })
+            .expect(200);
+
+        randomUserAuthToken = randLoginResponse.body.token;
     });
 
     afterEach(async () => {
@@ -176,45 +193,52 @@ describe('League Endpoints', () => {
     test('should remove a game from the league successfully, updates user', async () => { 
         expect(testUser.matches.length).toEqual(1);
         expect(testUser2.matches.length).toEqual(1);
-
         expect(league.matches.length).toEqual(1);
 
         await request(app)
-            .delete(`/api/league/remove-game/${league._id}/${nhlGame._id}`)
+            .delete(`/api/game/remove/${nhlGame.id}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(204);
 
         const updatedLeague = await League.findById(league._id);
-        expect(updatedLeague?.matches.length).toEqual(0);
+        const updatedUser = await User.findById(testUser._id);
+        const updatedUser2 = await User.findById(testUser2._id);
+
+        expect(updatedUser!.matches.length).toEqual(0);
+        expect(updatedUser2!.matches.length).toEqual(0);
+        expect(updatedLeague!.matches.length).toEqual(0);
+    });
+
+    test('should remove the game if game is not attached to any league', async () => {
+        await request(app)
+            .delete(`/api/game/remove/${nhlGame._id}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(204);
+    });
+
+    test('should not remove game if user is not part of the game', async () => { 
+        expect(testUser.matches.length).toEqual(1);
+        expect(testUser2.matches.length).toEqual(1);
+        expect(league.matches.length).toEqual(1);
+
+        await request(app)
+            .delete(`/api/game/remove/${nhlGame._id}`)
+            .set('Authorization', `Bearer ${randomUserAuthToken}`)
+            .expect(403);
+
+        const updatedLeague = await League.findById(league._id);
+        expect(updatedLeague?.matches.length).toEqual(1);
 
         const updatedUser = await User.findById(testUser._id);
         const updatedUser2 = await User.findById(testUser2._id);
-        expect(updatedUser!.matches.length).toEqual(0);
-        expect(updatedUser2!.matches.length).toEqual(0);
+        expect(updatedUser!.matches.length).toEqual(1);
+        expect(updatedUser2!.matches.length).toEqual(1);
     });
 
     test('should return 403 if token is missing', async () => {
         const response = await request(app)
-        .delete(`/api/league/remove-game/${league._id}/${nhlGame._id}`)
+        .delete(`/api/game/remove/${nhlGame._id}`)
         .expect(403);
-    });
-
-    test('should return 401 if user is not authorized', async () => {
-        const response = await request(app)
-            .delete(`/api/league/remove-game/${league._id}/${nhlGame._id}`)
-            .set('Authorization', `Bearer ${unauthorizedToken}`)
-            .expect(403);
-    });
-
-    test('should return 404 if league does not exist', async () => {
-        const fakeLeagueId = new mongoose.Types.ObjectId();
-
-        const response = await request(app)
-            .delete(`/api/league/remove-game/${fakeLeagueId}/${nhlGame._id}`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .expect(404);
-
-        expect(response.body.message).toBe('league not found');
     });
 
     test('should remove the league successfully', async () => {
