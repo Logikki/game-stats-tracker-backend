@@ -44,23 +44,24 @@ router.post(
 );
 router.post('/user/visibility', validateToken, attachUser, updateUserVisibility);
 
-router.post('/user/friend-request/:friendId', validateToken, attachUser, sendFriendRequest);
+router.post('/user/friend-request/:username', validateToken, attachUser, sendFriendRequest);
 router.post(
-    '/user/friend-request/accept/:friendId',
+    '/user/friend-request/accept/:username',
     validateToken,
     attachUser,
     acceptFriendRequest
 );
 router.delete(
-    '/user/friend-request/reject/:friendId',
+    '/user/friend-request/reject/:username',
     validateToken,
     attachUser,
     rejectFriendRequest
 );
-router.delete('/user/friend/:friendId', validateToken, attachUser, removeFriend);
+router.delete('/user/friend/:username', validateToken, attachUser, removeFriend);
 
 router.get('/user/own', validateToken, attachUser, getOwnUser);
 router.get('/user/:username', validateToken, attachUser, getUser);
+
 // for testing
 router.get('/game', getGames);
 router.get('/users', getUsers);
