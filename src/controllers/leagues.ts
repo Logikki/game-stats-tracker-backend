@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { League } from '../models/league/League';
-import { User, IUser } from '../models/common/User';
+import { User, IUser } from '../models/User/User';
 import { Types } from 'mongoose';
-import { BaseGame } from '../models/common/BaseGame';
+import { BaseGame } from '../models/Games/BaseGame';
 import { MiddleWare } from '../common/interfaces/express';
 
 export const createLeague = async (req: Request, res: Response) => {
@@ -47,15 +47,14 @@ export const putUserToLeague: MiddleWare = async (req, res, next) => {
 
     league.users.push(user.id);
     await league.save();
-    
-    const response = await league
-        .populate({
-            path: 'matches',
-            populate: [
-                { path: 'homePlayer', model: 'User', select: 'username' },
-                { path: 'awayPlayer', model: 'User', select: 'username' }
-            ]
-        });
+
+    const response = await league.populate({
+        path: 'matches',
+        populate: [
+            { path: 'homePlayer', model: 'User', select: 'username' },
+            { path: 'awayPlayer', model: 'User', select: 'username' }
+        ]
+    });
     res.status(200).json(response);
 };
 

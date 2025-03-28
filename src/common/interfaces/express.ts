@@ -1,5 +1,5 @@
 import { Request as ExpressRequest, NextFunction, Response } from 'express';
-import { IUser } from '../../models/common/User';
+import { IUser } from '../../models/User/User';
 import { ILeague } from '../../models/league/League';
 
 export interface TokenPayload {

@@ -3,7 +3,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import app from '../src/app';
 import { League } from '../src/models/league/League';
-import { User } from '../src/models/common/User';
+import { User } from '../src/models/User/User';
 import { Invitation } from '../src/models/Invitation';
 import { SALT_ROUNDS } from '../src/utils/config';
 import { hash } from 'bcrypt';
@@ -102,7 +102,7 @@ describe('League Invitation Endpoints', () => {
         expect(response.body.name).toBe(league.name);
     });
 
-    test('should allow a user to accept a valid invitation', async () => {
+    test('should allow a user to accept a valid invitation, correct values', async () => {
         const inviteResponse = await request(app)
             .post(`/api/league/invite/${league.id}`)
             .set('Authorization', `Bearer ${adminAuthToken}`)
@@ -117,6 +117,8 @@ describe('League Invitation Endpoints', () => {
 
         expect(response.body).toHaveProperty('_id');
         expect(response.body._id).toContain(league.id);
+        expect(response.body.matches).toBeDefined();
+        expect(response.body.users).toBeDefined();
     });
 
     test('should return 403 for an expired invitation', async () => {

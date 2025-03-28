@@ -1,22 +1,27 @@
 import { Request, Response } from 'express';
-import { User } from '../models/common/User';
+import { User, IUser } from '../models/User/User';
 import { SALT_ROUNDS } from '../utils/config';
 import { hash } from 'bcrypt';
-import { MiddleWare, TokenPayload } from 'src/common/interfaces/express';
+import { MiddleWare } from 'src/common/interfaces/express';
+import { ProfileVisibility } from '../common/enums/ProfileVisibility';
 
 export const createUser = async (req: Request, res: Response) => {
-    const { username, name, password, email } = req.body;
+    const { username, name, password, email, visibility } = req.body;
     if (!username || !name || !password || !email) {
         res.status(400).json({ error: 'Missing required fields' });
         return;
     }
+    if (visibility && !Object.values(ProfileVisibility).includes(visibility)) {
+        res.status(400).json({ error: 'Invalid visibility parameter' });
+        return;
+    }
     const passwordHash = await hash(password, SALT_ROUNDS);
-    const user = new User({ username, name, email, passwordHash });
+    const user = new User({ username, name, email, visibility, passwordHash });
     await user.save();
     res.status(201).json(user);
 };
 
-export const getUser: MiddleWare = async (req, res, next) => {
+export const getOwnUser: MiddleWare = async (req, res, _) => {
     const user = req.user;
 
     if (!user) {
@@ -25,24 +30,31 @@ export const getUser: MiddleWare = async (req, res, next) => {
     }
 
     console.log(user);
-    const response = await (await user
-        .populate({
-            path: 'leagues',
-            populate: [
-                { path: 'users', model: 'User', select: 'name' },
-                { path: 'matches', model: 'BaseGame' }
-            ]
-        }))
-        .populate({
-            path: 'matches',
-            populate: [
-                { path: 'homePlayer', model: 'User', select: 'username' },
-                { path: 'awayPlayer', model: 'User', select: 'username' }
-            ]
-        });
+    const response = await populateUser(user);
     res.status(200).json(response);
 };
 
+export const getUser: MiddleWare = async (req, res, _) => {
+    const ownUser = req.user;
+    const { username } = req.params;
+    console.log('username: ', username);
+
+    const userToGet = await User.findOne({ username: username });
+    if (!ownUser || !userToGet) {
+        return res.status(404).send('Not found');
+    }
+
+    if (!isUserVisibleToMe(ownUser, userToGet)) {
+        return res.status(403).send("Cannot view this user's profile");
+    }
+
+    console.log('User is able to see the profile');
+
+    const response = await populateUser(userToGet);
+    return res.status(200).json(response);
+};
+
+// remove later
 export const getUsers: MiddleWare = async (_req, res, _) => {
     const users = await User.find()
         .populate({
@@ -61,3 +73,149 @@ export const getUsers: MiddleWare = async (_req, res, _) => {
         });
     res.status(201).json(users);
 };
+
+export const updateUserVisibility: MiddleWare = async (req, res, _) => {
+    let user = req.user;
+
+    try {
+        const { visibility } = req.body;
+        if (!Object.values(ProfileVisibility).includes(visibility)) {
+            throw new Error(
+                `Invalid visibility value. Must be one of: ${Object.keys(ProfileVisibility).join(', ')}`
+            );
+        }
+
+        user!.profileVisibility = visibility;
+        await user!.save();
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to update user visibility' });
+    }
+};
+
+export const sendFriendRequest: MiddleWare = async (req, res) => {
+    const ownUser = req.user;
+    const { username } = req.params;
+
+    if (!ownUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (ownUser.username === username) {
+        return res.status(400).json({ error: 'Cannot send a friend request to yourself' });
+    }
+
+    const friend = await User.findOne({ username }).select('_id friendRequests friends');
+    if (!friend) return res.status(404).json({ error: 'User not found' });
+
+    if (friend.friendRequests.includes(ownUser.id) || friend.friends.includes(ownUser.id)) {
+        return res.status(400).json({ error: 'Friend request already sent or already friends' });
+    }
+
+    friend.friendRequests.push(ownUser.id);
+    await friend.save();
+
+    res.status(200).json({ message: 'Friend request sent' });
+};
+
+export const acceptFriendRequest: MiddleWare = async (req, res) => {
+    const ownUser = req.user;
+    const { username } = req.params;
+
+    if (!ownUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const friend = await User.findOne({ username }).select('_id friends');
+    if (!friend) return res.status(404).json({ error: 'User not found' });
+
+    if (!ownUser.friendRequests.includes(friend.id.toString())) {
+        return res.status(400).json({ error: 'No friend request from this user' });
+    }
+
+    // Remove from requests and add to friends list
+    ownUser.friendRequests = ownUser.friendRequests.filter(
+        (id) => id.toString() !== friend.id.toString()
+    );
+    ownUser.friends.push(friend.id);
+    friend.friends.push(ownUser.id);
+
+    await Promise.all([ownUser.save(), friend.save()]);
+
+    res.status(200).json({ message: 'Friend request accepted' });
+};
+
+export const rejectFriendRequest: MiddleWare = async (req, res) => {
+    const ownUser = req.user;
+    const { username } = req.params;
+
+    if (!ownUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const friend = await User.findOne({ username }).select('_id');
+    if (!friend) return res.status(404).json({ error: 'User not found' });
+
+    ownUser.friendRequests = ownUser.friendRequests.filter(
+        (id) => id.toString() !== friend.id.toString()
+    );
+    await ownUser.save();
+
+    res.status(200).json({ message: 'Friend request rejected' });
+};
+
+export const removeFriend: MiddleWare = async (req, res) => {
+    const ownUser = req.user;
+    const { username } = req.params;
+
+    if (!ownUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const friend = await User.findOne({ username }).select('_id friends');
+    if (!friend) return res.status(404).json({ error: 'User not found' });
+
+    ownUser.friends = ownUser.friends.filter((id) => id.toString() !== friend.id.toString());
+    friend.friends = friend.friends.filter((id) => id.toString() !== ownUser.id.toString());
+
+    await Promise.all([ownUser.save(), friend.save()]);
+
+    res.status(200).json({ message: 'Friend removed' });
+};
+
+const populateUser = async (user: IUser) => {
+    return user.populate([
+        {
+            path: 'leagues',
+            populate: [
+                { path: 'users', model: 'User', select: 'name' },
+                { path: 'matches', model: 'BaseGame' }
+            ]
+        },
+        {
+            path: 'matches',
+            populate: [
+                { path: 'homePlayer', model: 'User', select: 'username' },
+                { path: 'awayPlayer', model: 'User', select: 'username' }
+            ]
+        },
+        {
+            path: 'friends',
+            select: 'username'
+        }
+    ]);
+};
+
+function isUserVisibleToMe(ownUser: IUser, userToGet: IUser): boolean {
+    switch (userToGet.profileVisibility) {
+        case ProfileVisibility.Public:
+            return true;
+        case ProfileVisibility.Private:
+            return false;
+        case ProfileVisibility.Friends:
+            return ownUser.friends.includes(userToGet.id) && userToGet.friends.includes(ownUser.id);
+        default:
+            return false;
+    }
+}

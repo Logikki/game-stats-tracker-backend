@@ -2,11 +2,11 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import app from '../src/app';
-import { BaseGame } from '../src/models/common/BaseGame';
+import { BaseGame } from '../src/models/Games/BaseGame';
 import { SALT_ROUNDS } from '../src/utils/config';
 import { hash } from 'bcrypt';
 import { League } from '../src/models/league/League';
-import { User } from '../src/models/common/User';
+import { User } from '../src/models/User/User';
 import { GameType } from '../src/common/enums/GameType';
 
 describe('Game Creation Endpoints', () => {

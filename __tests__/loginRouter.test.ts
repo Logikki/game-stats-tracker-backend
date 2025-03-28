@@ -2,7 +2,7 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import app from '../src/app';
-import { User } from '../src/models/common/User';
+import { User } from '../src/models/User/User';
 import { SALT_ROUNDS } from '../src/utils/config';
 import { hash } from 'bcrypt';
 

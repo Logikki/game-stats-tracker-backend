@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { JWT_SECRET } from '../utils/config';
-import { User } from '../models/common/User';
+import { User } from '../models/User/User';
 import { TokenPayload } from '../common/interfaces/express';
 
 export const login = async (request: Request, response: Response) => {

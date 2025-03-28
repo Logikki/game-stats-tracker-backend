@@ -9,6 +9,9 @@ interface IUser extends Document {
     passwordHash: string;
     matches: Types.ObjectId[];
     leagues: Types.ObjectId[];
+    friends: Types.ObjectId[];
+    friendRequests: Types.ObjectId[];
+    gameCount(): number;
 }
 
 const userSchema: Schema = new Schema<IUser>({
@@ -16,21 +19,36 @@ const userSchema: Schema = new Schema<IUser>({
     name: { type: String, required: true },
     email: { type: String, required: true },
     passwordHash: { type: String, required: true },
-    profileVisibility: { type: String, enum: ProfileVisibility, default: ProfileVisibility.Private },
+    profileVisibility: {
+        type: String,
+        enum: ProfileVisibility,
+        default: ProfileVisibility.Private
+    },
+    friends: [
+        {
+            type: Types.ObjectId,
+            required: false,
+            ref: 'User',
+            default: []
+        }
+    ],
     matches: [
         {
             type: Types.ObjectId,
             required: false,
-            ref: 'BaseGame'
+            ref: 'BaseGame',
+            default: []
         }
     ],
     leagues: [
         {
             type: Types.ObjectId,
             required: false,
-            ref: 'League'
+            ref: 'League',
+            default: []
         }
-    ]
+    ],
+    friendRequests: [{ type: Types.ObjectId, ref: 'User', default: [] }]
 });
 
 userSchema.set('toJSON', {
@@ -44,4 +62,4 @@ userSchema.set('toJSON', {
 
 const User = mongoose.model<IUser>('User', userSchema);
 
-export { User, IUser };
+export { User, IUser, userSchema };

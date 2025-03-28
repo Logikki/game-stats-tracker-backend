@@ -2,8 +2,8 @@ POST http://localhost:3000/api/user
 Content-Type: application/json
 
 {
-    "username": "mikkihiiri",
-    "name": "mikki",
-    "email": "mikkihiiri@luukku.fi",
+    "username": "testeri",
+    "name": "testeri",
+    "email": "testeri@luukku.fi",
     "password": "salainenmikitin"
 }

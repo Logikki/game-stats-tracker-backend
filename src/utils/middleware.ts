@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { User } from '../models/common/User';
+import { User } from '../models/User/User';
 import { MiddleWare, TokenPayload } from '../common/interfaces/express';
 import { JWT_SECRET } from './config';
 import { League } from '../models/league/League';
