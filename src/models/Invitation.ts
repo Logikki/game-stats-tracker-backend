@@ -8,7 +8,7 @@ interface IInvitation extends Document {
     used: boolean;
 }
 
-const invitationSchema = new Schema<IInvitation>({
+const InvitationSchema = new Schema<IInvitation>({
     code: { type: String, required: true, unique: true },
     league: { type: Schema.Types.ObjectId, ref: 'League', required: true },
     invitedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -16,5 +16,5 @@ const invitationSchema = new Schema<IInvitation>({
     used: { type: Boolean, default: false }
 });
 
-const Invitation = mongoose.model<IInvitation>('Invitation', invitationSchema);
+const Invitation = mongoose.model<IInvitation>('Invitation', InvitationSchema);
 export { Invitation, IInvitation };

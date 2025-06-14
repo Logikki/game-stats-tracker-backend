@@ -1,0 +1,9 @@
+POST https://game-stats-tracker-api.fly.dev/api/user
+Content-Type: application/json
+
+{
+    "username": "testeri",
+    "name": "testeri",
+    "email": "testeri@luukku.fi",
+    "password": "salainenmikitin"
+}

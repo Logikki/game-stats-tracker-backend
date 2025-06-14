@@ -57,8 +57,8 @@ describe('League Endpoints', () => {
             name: 'Test League',
             description: 'League for testing',
             gameTypes: ['NHL'],
-            admins: [testUser._id],
-            users: [testUser._id, testUser2._id],
+            admins: [testUser.id],
+            users: [testUser.id, testUser2.id],
             duration: '2025-12-31T23:59:59.000Z',
             matches: []
         });
@@ -67,9 +67,9 @@ describe('League Endpoints', () => {
             gameType: GameType.NHL,
             homeTeam: 'Team A',
             awayTeam: 'Team B',
-            league: league._id,
-            homePlayer: testUser._id,
-            awayPlayer: testUser2._id,
+            league: league.id,
+            homePlayer: testUser.id,
+            awayPlayer: testUser2.id,
             homeScore: 3,
             awayScore: 2,
             overTime: false,
@@ -77,7 +77,7 @@ describe('League Endpoints', () => {
             createdAt: Date.now()
         });
 
-        league.matches.push(nhlGame._id);
+        league.matches.push(nhlGame.id);
         testUser.matches.push(nhlGame);
         testUser2.matches.push(nhlGame);
         await league.save();
@@ -161,7 +161,7 @@ describe('League Endpoints', () => {
             .expect(200);
 
         const updatedUser = await User.findById(hessuHopo.id);
-        expect(updatedUser?.leagues[0]._id).toEqual(league._id);
+        expect(updatedUser?.leagues[0].toString()).toContain(league.id);
     });
 
     test ('Add user insuccessfully if not admin, does not update user', async () => {
@@ -173,7 +173,7 @@ describe('League Endpoints', () => {
         });
 
         await request(app)
-            .post(`/api/league/user/${league._id}`)
+            .post(`/api/league/user/${league.id}`)
             .set('Authorization', `Bearer ${unauthorizedToken}`)
             .send({ username: hessuHopo.username })
             .expect(403);
@@ -200,9 +200,9 @@ describe('League Endpoints', () => {
             .set('Authorization', `Bearer ${authToken}`)
             .expect(204);
 
-        const updatedLeague = await League.findById(league._id);
-        const updatedUser = await User.findById(testUser._id);
-        const updatedUser2 = await User.findById(testUser2._id);
+        const updatedLeague = await League.findById(league.id);
+        const updatedUser = await User.findById(testUser.id);
+        const updatedUser2 = await User.findById(testUser2.id);
 
         expect(updatedUser!.matches.length).toEqual(0);
         expect(updatedUser2!.matches.length).toEqual(0);
@@ -211,7 +211,7 @@ describe('League Endpoints', () => {
 
     test('should remove the game if game is not attached to any league', async () => {
         await request(app)
-            .delete(`/api/game/remove/${nhlGame._id}`)
+            .delete(`/api/game/remove/${nhlGame.id}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(204);
     });
@@ -222,43 +222,43 @@ describe('League Endpoints', () => {
         expect(league.matches.length).toEqual(1);
 
         await request(app)
-            .delete(`/api/game/remove/${nhlGame._id}`)
+            .delete(`/api/game/remove/${nhlGame.id}`)
             .set('Authorization', `Bearer ${randomUserAuthToken}`)
             .expect(403);
 
-        const updatedLeague = await League.findById(league._id);
+        const updatedLeague = await League.findById(league.id);
         expect(updatedLeague?.matches.length).toEqual(1);
 
-        const updatedUser = await User.findById(testUser._id);
-        const updatedUser2 = await User.findById(testUser2._id);
+        const updatedUser = await User.findById(testUser.id);
+        const updatedUser2 = await User.findById(testUser2.id);
         expect(updatedUser!.matches.length).toEqual(1);
         expect(updatedUser2!.matches.length).toEqual(1);
     });
 
     test('should return 403 if token is missing', async () => {
         const response = await request(app)
-        .delete(`/api/game/remove/${nhlGame._id}`)
+        .delete(`/api/game/remove/${nhlGame.id}`)
         .expect(403);
     });
 
     test('should remove the league successfully', async () => {
         const response = await request(app)
-            .delete(`/api/league/delete/${league._id}`)
+            .delete(`/api/league/delete/${league.id}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(204);
 
-        const updatedLeague = await League.findById(league._id);
+        const updatedLeague = await League.findById(league.id);
 
         expect(updatedLeague).toBeNull();
     });
 
     test('should not remove the league if user is not an admin', async () => {
         await request(app)
-            .delete(`/api/league/delete/${league._id}`)
+            .delete(`/api/league/delete/${league.id}`)
             .set('Authorization', `Bearer ${unauthorizedToken}`)
             .expect(403);
 
-        const updatedLeague = await League.findById(league._id);
+        const updatedLeague = await League.findById(league.id);
 
         expect(updatedLeague).toBeDefined();
     });

@@ -1,5 +1,0 @@
-GET http://localhost:3000/api/user/testeri
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGVyaSIsInVzZXJuYW1lIjoidGVzdGVyaSIsImlkIjoiNjdkZWE2OWYxZDdlYjQ3MGFhNjUyNDU0IiwiaWF0IjoxNzQzMDY1NDU4LCJleHAiOjE3NDU2NTc0NTh9.pDgzH012Rd6ptoqRSuWC3OjUNMX3dHje2iQYMMmeRIQ
-
-{ }

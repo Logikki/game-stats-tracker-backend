@@ -56,11 +56,12 @@ export const getUser: MiddleWare = async (req, res, _) => {
 
 // remove later
 export const getUsers: MiddleWare = async (_req, res, _) => {
+    console.log('USER ROUTER: get users');
     const users = await User.find()
         .populate({
             path: 'leagues',
             populate: [
-                { path: 'users', model: 'User', select: 'name' },
+                { path: 'users', model: 'User', select: 'username' },
                 { path: 'matches', model: 'BaseGame' }
             ]
         })
@@ -71,6 +72,7 @@ export const getUsers: MiddleWare = async (_req, res, _) => {
                 { path: 'awayPlayer', model: 'User', select: 'username' }
             ]
         });
+    console.log('Users: ' + users);
     res.status(201).json(users);
 };
 
@@ -189,7 +191,8 @@ const populateUser = async (user: IUser) => {
         {
             path: 'leagues',
             populate: [
-                { path: 'users', model: 'User', select: 'name' },
+                { path: 'users', model: 'User', select: 'username' },
+                { path: 'admins', model: 'User', select: 'username' },
                 { path: 'matches', model: 'BaseGame' }
             ]
         },

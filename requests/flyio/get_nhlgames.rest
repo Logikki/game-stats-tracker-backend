@@ -1,0 +1,4 @@
+GET https://game-stats-tracker-api.fly.dev/api/game
+Content-Type: application/json
+
+{ }

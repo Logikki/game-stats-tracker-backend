@@ -1,0 +1,7 @@
+POST https://game-stats-tracker-api.fly.dev/api/league/user/684d54adb0c7334a45c60ef4
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGVyaSIsInVzZXJuYW1lIjoidGVzdGVyaSIsImlkIjoiNjdkZWE2OWYxZDdlYjQ3MGFhNjUyNDU0IiwiaWF0IjoxNzQ5OTA5NjIxLCJleHAiOjE3NTI1MDE2MjF9.BCjADkKjPKQnh8zMjitUHZAdruQt1XU61SjkjDGY1Yg
+
+{
+    "username": "mikkihiiri"
+}

@@ -1,0 +1,16 @@
+POST https://game-stats-tracker-api.fly.dev/api/game
+Content-Type: application/json
+
+{
+   "league": "684d54adb0c7334a45c60ef4",
+   "gameType": "FIFA",
+   "homeTeam": "Liverpool",
+   "awayTeam": "PSG",
+   "homePlayer": "testeri",
+   "awayPlayer": "mikkihiiri",
+   "homeScore": 1,
+   "awayScore": 4,
+   "createdAt": "2025-05-07T19:30:00Z",
+   "overTime": true,
+   "penalties": false
+}

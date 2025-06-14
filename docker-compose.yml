@@ -13,14 +13,14 @@ services:
             SECRET: ${SECRET}
             JWT_SECRET: ${JWT_SECRET}
         networks:
-            - game-stats-tracker
+            - game-stats-tracker-api
         volumes:
             - .:/node/app
             - /node/app/node_modules
         ports:
-            - '3000:3000' # Make sure the port is exposed
+            - '3000:3000'
         command: ['node', 'dist/index.js']
 
 networks:
-    game-stats-tracker:
+    game-stats-tracker-api:
         driver: bridge

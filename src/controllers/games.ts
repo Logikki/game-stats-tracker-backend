@@ -89,8 +89,8 @@ export const createGame = async (req: Request, res: Response) => {
 
 export const getGames = async (_req: Request, res: Response) => {
     const games = await BaseGame.find()
-        .populate({ path: 'homePlayer', select: 'name' })
-        .populate({ path: 'awayPlayer', select: 'name' });
+        .populate({ path: 'homePlayer', select: 'username' })
+        .populate({ path: 'awayPlayer', select: 'username' });
     res.json(games);
 };
 

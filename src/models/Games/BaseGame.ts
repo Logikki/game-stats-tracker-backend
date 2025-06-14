@@ -33,6 +33,14 @@ const BaseGameSchema = new Schema<IBaseGame>(
     { discriminatorKey: 'gameType' }
 );
 
+BaseGameSchema.set('toJSON', {
+    transform: (document, returnedObject: Record<string, any>) => {
+        returnedObject.id = returnedObject._id.toString();
+        delete returnedObject._id;
+        delete returnedObject.__v;
+    }
+});
+
 const BaseGame = mongoose.model<IBaseGame>('BaseGame', BaseGameSchema);
 
 export { IBaseGame, BaseGame };

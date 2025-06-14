@@ -1,0 +1,12 @@
+POST https://game-stats-tracker-api.fly.dev/api/league
+Content-Type: application/json
+
+{
+    "name": "Champions League",
+    "gameTypes": ["FIFA"],
+    "admins": ["testeri"],
+    "users": [
+        "testeri"
+    ],
+    "duration": "2025-12-31T23:59:59.000Z"
+}

@@ -14,7 +14,7 @@ interface IUser extends Document {
     gameCount(): number;
 }
 
-const userSchema: Schema = new Schema<IUser>({
+const UserSchema: Schema = new Schema<IUser>({
     username: { type: String, required: true },
     name: { type: String, required: true },
     email: { type: String, required: true },
@@ -51,7 +51,7 @@ const userSchema: Schema = new Schema<IUser>({
     friendRequests: [{ type: Types.ObjectId, ref: 'User', default: [] }]
 });
 
-userSchema.set('toJSON', {
+UserSchema.set('toJSON', {
     transform: (document, returnedObject: Record<string, any>) => {
         returnedObject.id = returnedObject._id.toString();
         delete returnedObject._id;
@@ -60,6 +60,6 @@ userSchema.set('toJSON', {
     }
 });
 
-const User = mongoose.model<IUser>('User', userSchema);
+const User = mongoose.model<IUser>('User', UserSchema);
 
-export { User, IUser, userSchema };
+export { User, IUser, UserSchema };

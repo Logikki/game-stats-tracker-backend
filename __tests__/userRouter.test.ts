@@ -217,19 +217,19 @@ describe('User Registration Endpoints', () => {
 
         expect(body.username).toEqual(myUser.username);
         expect(body.name).toEqual(myUser.name);
-        expect(body._id).toEqual(myUserResponse.body._id);
+        expect(body.id).toEqual(myUserResponse.body.id);
         expect(body.leagues).toBeDefined();
         
         expect(body.matches.length).toBe(1);
-        expect(body.matches[0]._id).toBe(gameResponse.body._id);
+        expect(body.matches[0].id).toBe(gameResponse.body.id);
 
         expect(body.matches[0].homePlayer.username).toBe(myUserResponse.body.username);
-        expect(body.matches[0].homePlayer._id).toBe(myUserResponse.body._id);
+        expect(body.matches[0].homePlayer.id).toBe(myUserResponse.body.id);
         expect(body.matches[0].homePlayer.leagues).toBeUndefined();
         expect(body.matches[0].homePlayer.matches).toBeUndefined();
 
         expect(body.matches[0].awayPlayer.username).toBe(testUserResponse.body.username);
-        expect(body.matches[0].awayPlayer._id).toBe(testUserResponse.body._id);
+        expect(body.matches[0].awayPlayer.id).toBe(testUserResponse.body.id);
         expect(body.matches[0].awayPlayer.leagues).toBeUndefined();
         expect(body.matches[0].awayPlayer.matches).toBeUndefined();
         });
@@ -291,8 +291,8 @@ describe('user visibility, friend requests', () => {
             name: 'Test League',
             description: 'This is a test league',
             gameTypes: [GameType.NHL],
-            admins: [homeUser._id],
-            users: [homeUser._id, testUser._id],
+            admins: [homeUser.id],
+            users: [homeUser.id, testUser.id],
             duration: '2025-12-31T23:59:59.000Z'
         });
 
@@ -303,8 +303,8 @@ describe('user visibility, friend requests', () => {
             createdAt: '2024-03-06T12:00:00Z',
             homeScore: 1,
             awayScore: 2,
-            homePlayer: homeUser._id,
-            awayPlayer: testUser._id,
+            homePlayer: homeUser.id,
+            awayPlayer: testUser.id,
         });
         
         const loginResponse = await request(app)
@@ -380,7 +380,7 @@ describe('user visibility, friend requests', () => {
         expect(userResponse.body.username).toBe(homeUser.username);
         expect(userResponse.body.name).toBe(homeUser.name);
         expect(userResponse.body.matches.length).toBe(1);
-        expect(userResponse.body.matches[0]._id).toBe(testGame.id);
+        expect(userResponse.body.matches[0].id).toBe(testGame.id);
     });
 
     test('should return user profile with populated friends', async () => {
@@ -406,7 +406,7 @@ describe('user visibility, friend requests', () => {
         expect(response.body.message).toBe('Friend request sent');
     
         const updatedTestUser = await User.findById(testUser.id);
-        expect(updatedTestUser!.friendRequests[0]._id).toEqual(homeUser._id);
+        expect(updatedTestUser!.friendRequests[0].toString()).toBe(homeUser.id);
     });
     
     test('should not send a friend request to yourself', async () => {
@@ -446,8 +446,8 @@ describe('user visibility, friend requests', () => {
         const updatedHomeUser = await User.findById(homeUser.id);
         const updatedTestUser = await User.findById(testUser.id);
     
-        expect(updatedHomeUser!.friends[0]._id).toEqual(testUser._id);
-        expect(updatedTestUser!.friends[0]._id).toEqual(homeUser._id);
+        expect(updatedHomeUser!.friends[0].toString()).toBe(testUser.id);
+        expect(updatedTestUser!.friends[0].toString()).toBe(homeUser.id);
     });
     
     test('should reject a friend request', async () => {
@@ -465,7 +465,7 @@ describe('user visibility, friend requests', () => {
             .set('Authorization', `Bearer ${testAuthToken}`)
             .expect(200);
     
-        const updatedTestUser = await User.findById(testUser._id);
+        const updatedTestUser = await User.findById(testUser);
         expect(updatedTestUser!.friendRequests).not.toContainEqual(homeUser._id);
     });
     
@@ -483,7 +483,7 @@ describe('user visibility, friend requests', () => {
         const updatedHomeUser = await User.findById(homeUser.id);
         const updatedTestUser = await User.findById(testUser.id);
     
-        expect(updatedHomeUser!.friends).not.toContainEqual(testUser._id);
-        expect(updatedTestUser!.friends).not.toContainEqual(homeUser._id);
+        expect(updatedHomeUser!.friends).not.toContainEqual(testUser.id);
+        expect(updatedTestUser!.friends).not.toContainEqual(homeUser.id);
     });
 });

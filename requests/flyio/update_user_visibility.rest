@@ -1,0 +1,7 @@
+POST https://game-stats-tracker-api.fly.dev/api/user/visibility/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGVyaSIsInVzZXJuYW1lIjoidGVzdGVyaSIsImlkIjoiNjdkZWE2OWYxZDdlYjQ3MGFhNjUyNDU0IiwiaWF0IjoxNzQyNjQ0OTEzLCJleHAiOjE3NDUyMzY5MTN9.vzdKx26FSkEYak4DjHQYpEToOguoMAzZxkc7JqfV6fY
+
+{
+    "visibility": "public"
+}

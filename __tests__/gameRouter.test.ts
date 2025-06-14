@@ -73,7 +73,7 @@ describe('Game Creation Endpoints', () => {
         .expect(201);
 
         expect(response.body.gameType).toBe(GameType.NHL);
-        expect(response.body).toHaveProperty('_id');
+        expect(response.body).toHaveProperty('id');
         expect(response.body.homeTeam).toBe(validGameData.homeTeam);
         expect(response.body.awayTeam).toBe(validGameData.awayTeam);
         expect(response.body.homeScore).toBe(validGameData.homeScore);
@@ -99,7 +99,7 @@ describe('Game Creation Endpoints', () => {
         .expect(201);
 
         expect(response.body.gameType).toBe(GameType.FIFA);
-        expect(response.body).toHaveProperty('_id');
+        expect(response.body).toHaveProperty('id');
         expect(response.body.homeTeam).toBe(validGameData.homeTeam);
         expect(response.body.awayTeam).toBe(validGameData.awayTeam);
         expect(response.body.homeScore).toBe(validGameData.homeScore);
@@ -125,7 +125,7 @@ describe('Game Creation Endpoints', () => {
 
         const response = await request(app).post('/api/game').send(gameData).expect(201);
 
-        expect(response.body).toHaveProperty('_id');
+        expect(response.body).toHaveProperty('id');
         expect(response.body.awayTeam).toBe(gameData.awayTeam);
         expect(response.body.homeTeam).toBe(gameData.homeTeam);
         expect(response.body.homeScore).toBe(gameData.homeScore);
@@ -142,8 +142,8 @@ describe('Game Creation Endpoints', () => {
             name: 'Test League',
             description: 'This is a test league',
             gameTypes: [GameType.NHL],
-            admins: [homeUser._id],
-            users: [homeUser._id, awayUser._id],
+            admins: [homeUser.id],
+            users: [homeUser.id, awayUser.id],
             duration: '2025-12-31T23:59:59.000Z'
         });
 
@@ -164,9 +164,9 @@ describe('Game Creation Endpoints', () => {
         const response = await request(app).post('/api/game').send(gameData).expect(201);
         const updatedLeague = await League.findById(newLeague.id);
 
-        expect(response.body).toHaveProperty('_id');
+        expect(response.body).toHaveProperty('id');
         expect(response.body.league).toBe(newLeague.id);
-        expect(updatedLeague?.matches[0]._id.toString()).toEqual(response.body._id.toString());
+        expect(updatedLeague?.matches[0].toString()).toEqual(response.body.id.toString());
     });
 
     test('should return 400 if required fields are missing for FIFA game', async () => {
@@ -192,8 +192,8 @@ describe('Game Creation Endpoints', () => {
             name: 'Test League',
             description: 'This is a test league',
             gameTypes: [GameType.NHL],
-            admins: [homeUser._id],
-            users: [homeUser._id],
+            admins: [homeUser.id],
+            users: [homeUser.id],
             duration: '2025-12-31T23:59:59.000Z'
         });
 

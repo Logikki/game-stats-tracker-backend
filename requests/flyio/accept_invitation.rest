@@ -1,0 +1,3 @@
+POST https://game-stats-tracker-api.fly.dev/api/league/join/417b83de-7ffd-4a0a-9840-a0232823afe4
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicmVhbGRlc3RydWN0aW9uIiwidXNlcm5hbWUiOiJyZWFsZGVzdHJ1Y3Rpb24iLCJpZCI6IjY3ZGMwM2U3OTBiMjVkYzgyOGZiYmM0MSIsImlhdCI6MTc0MjQ3MjE5NSwiZXhwIjoxNzQ1MDY0MTk1fQ.PNr9HLE_ompCbaXFzO2f9fD6-sOtWXrASYOVGc49eJI

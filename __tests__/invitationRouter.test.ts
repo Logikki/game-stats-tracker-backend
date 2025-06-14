@@ -45,8 +45,8 @@ describe('League Invitation Endpoints', () => {
             name: 'Test League',
             description: 'This is a test league',
             gameTypes: ['NHL'],
-            admins: [admin._id],
-            users: [admin._id],
+            admins: [admin.id],
+            users: [admin.id],
             duration: '2025-12-31T23:59:59.000Z'
         });
 
@@ -115,8 +115,8 @@ describe('League Invitation Endpoints', () => {
             .set('Authorization', `Bearer ${nonAdminToken}`)
             .expect(200);
 
-        expect(response.body).toHaveProperty('_id');
-        expect(response.body._id).toContain(league.id);
+        expect(response.body).toHaveProperty('id');
+        expect(response.body.id).toContain(league.id);
         expect(response.body.matches).toBeDefined();
         expect(response.body.users).toBeDefined();
     });

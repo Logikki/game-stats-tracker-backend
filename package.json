@@ -1,5 +1,5 @@
 {
-    "name": "game-stats-tracker-backend",
+    "name": "game-stats-tracker-api",
     "version": "1.0.0",
     "main": "index.js",
     "engines": {
@@ -14,7 +14,9 @@
         "build": "npm install && npx tsc",
         "start": "npm run build && node dist/index.js",
         "format": "npx prettier . --write src/*",
-        "start:docker": "docker-compose up"
+        "start:docker": "docker-compose up",
+        "build:docker": "docker build . -t game-stats-tracker-api",
+        "deploy:fly": "flyctl deploy"
     },
     "keywords": [],
     "author": "Roni Koskinen",
