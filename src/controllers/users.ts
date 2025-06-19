@@ -4,6 +4,7 @@ import { SALT_ROUNDS } from '../utils/config';
 import { hash } from 'bcrypt';
 import { MiddleWare } from 'src/common/interfaces/express';
 import { ProfileVisibility } from '../common/enums/ProfileVisibility';
+import { populateUser } from '../common/populate';
 
 export const createUser = async (req: Request, res: Response) => {
     const { username, name, password, email, visibility } = req.body;
@@ -44,7 +45,7 @@ export const getUser: MiddleWare = async (req, res, _) => {
         return res.status(404).send('Not found');
     }
 
-    if (!isUserVisibleToMe(ownUser, userToGet)) {
+    if (!userToGet.isVisibleTo(ownUser)) {
         return res.status(403).send("Cannot view this user's profile");
     }
 
@@ -57,23 +58,14 @@ export const getUser: MiddleWare = async (req, res, _) => {
 // remove later
 export const getUsers: MiddleWare = async (_req, res, _) => {
     console.log('USER ROUTER: get users');
-    const users = await User.find()
-        .populate({
-            path: 'leagues',
-            populate: [
-                { path: 'users', model: 'User', select: 'username' },
-                { path: 'matches', model: 'BaseGame' }
-            ]
-        })
-        .populate({
-            path: 'matches',
-            populate: [
-                { path: 'homePlayer', model: 'User', select: 'username' },
-                { path: 'awayPlayer', model: 'User', select: 'username' }
-            ]
-        });
-    console.log('Users: ' + users);
-    res.status(201).json(users);
+    const users = await User.find();
+
+    const populatedUsers = await Promise.all(
+        users.map(userDoc => populateUser(userDoc))
+    );
+
+    console.log('Users: ' + populatedUsers);
+    res.status(201).json(populatedUsers);
 };
 
 export const updateUserVisibility: MiddleWare = async (req, res, _) => {
@@ -185,40 +177,3 @@ export const removeFriend: MiddleWare = async (req, res) => {
 
     res.status(200).json({ message: 'Friend removed' });
 };
-
-const populateUser = async (user: IUser) => {
-    return user.populate([
-        {
-            path: 'leagues',
-            populate: [
-                { path: 'users', model: 'User', select: 'username' },
-                { path: 'admins', model: 'User', select: 'username' },
-                { path: 'matches', model: 'BaseGame' }
-            ]
-        },
-        {
-            path: 'matches',
-            populate: [
-                { path: 'homePlayer', model: 'User', select: 'username' },
-                { path: 'awayPlayer', model: 'User', select: 'username' }
-            ]
-        },
-        {
-            path: 'friends',
-            select: 'username'
-        }
-    ]);
-};
-
-function isUserVisibleToMe(ownUser: IUser, userToGet: IUser): boolean {
-    switch (userToGet.profileVisibility) {
-        case ProfileVisibility.Public:
-            return true;
-        case ProfileVisibility.Private:
-            return false;
-        case ProfileVisibility.Friends:
-            return ownUser.friends.includes(userToGet.id) && userToGet.friends.includes(ownUser.id);
-        default:
-            return false;
-    }
-}

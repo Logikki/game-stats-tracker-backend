@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { League } from '../models/league/League';
+import { ILeague, League } from '../models/league/League';
 import { User, IUser } from '../models/User/User';
 import { Types } from 'mongoose';
 import { MiddleWare } from '../common/interfaces/express';
+import { populateLeague } from '../common/populate';
 
 export const createLeague = async (req: Request, res: Response) => {
     const userIds = await resolveUsers(req.body.users);
@@ -34,26 +35,20 @@ export const createLeague = async (req: Request, res: Response) => {
 export const putUserToLeague: MiddleWare = async (req, res, next) => {
     const { username } = req.body;
     const league = req.league;
-    const user = await User.findOne({ username: username });
+    const userToAdd = await User.findOne({ username: username });
 
-    if (!league || !user) {
+    if (!league || !userToAdd) {
         res.status(404).json({ message: 'Missing required fields' });
         return;
     }
 
-    user.leagues.push(league.id);
-    await user.save();
+    userToAdd.leagues.push(league.id);
+    await userToAdd.save();
 
-    league.users.push(user.id);
+    league.users.push(userToAdd.id);
     await league.save();
 
-    const response = await league.populate({
-        path: 'matches',
-        populate: [
-            { path: 'homePlayer', model: 'User', select: 'username' },
-            { path: 'awayPlayer', model: 'User', select: 'username' }
-        ]
-    });
+    const response = await populateLeague(league);
     res.status(200).json(response);
 };
 

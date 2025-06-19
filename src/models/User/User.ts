@@ -5,13 +5,13 @@ interface IUser extends Document {
     username: string;
     name: string;
     email: string;
-    profileVisibility: string;
+    profileVisibility: ProfileVisibility;
     passwordHash: string;
     matches: Types.ObjectId[];
     leagues: Types.ObjectId[];
     friends: Types.ObjectId[];
     friendRequests: Types.ObjectId[];
-    gameCount(): number;
+    isVisibleTo(ownUser: IUser): boolean;
 }
 
 const UserSchema: Schema = new Schema<IUser>({
@@ -50,6 +50,31 @@ const UserSchema: Schema = new Schema<IUser>({
     ],
     friendRequests: [{ type: Types.ObjectId, ref: 'User', default: [] }]
 });
+
+UserSchema.methods.isVisibleTo = function(this: IUser, ownUser: IUser): boolean {
+    const userToGet = this;
+
+    if (ownUser.id.toString() == userToGet.id.toString()) {
+        return true;
+    }
+
+    switch (userToGet.profileVisibility) {
+        case ProfileVisibility.Public:
+            return true;
+        case ProfileVisibility.Private:
+            return false;
+        case ProfileVisibility.Friends:
+            const isOwnUserFriendOfUserToGet = userToGet.friends.some(
+                (friendId: Types.ObjectId) => friendId.equals(ownUser.id)
+            );
+            const isUserToGetFriendOfOwnUser = ownUser.friends.some(
+                (friendId: Types.ObjectId) => friendId.equals(userToGet.id)
+            );
+            return isOwnUserFriendOfUserToGet && isUserToGetFriendOfOwnUser;
+        default:
+            return false;
+    }
+};
 
 UserSchema.set('toJSON', {
     transform: (document, returnedObject: Record<string, any>) => {
