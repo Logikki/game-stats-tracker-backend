@@ -18,7 +18,7 @@ describe('League Endpoints', () => {
     let nhlGame: any;
     let authToken: string;
     let unauthorizedToken: string;
-    let randomUserAuthToken: string
+    let randomUserAuthToken: string;
 
     beforeAll(async () => {
         jest.setTimeout(10000); // Increase Jest timeout to 10 seconds
@@ -133,17 +133,22 @@ describe('League Endpoints', () => {
 
         expect(createdLeague.name).toEqual(leagueData.name);
         expect(createdLeague.gameTypes).toEqual(leagueData.gameTypes);
-        expect(createdLeague.admins[0]).toEqual(testUser.id);
-        expect(createdLeague.users[0]).toEqual(testUser.id);
-        expect(createdLeague.users[1]).toEqual(testUser2.id);
+
+        // Checking by username ensures we populated the correct user records
+        expect(createdLeague.admins[0].username).toEqual(testUser.username);
+
+        // Ensure both users are present in the populated array
+        const userUsernames = createdLeague.users.map((u: any) => u.username);
+        expect(userUsernames).toContain(testUser.username);
+        expect(userUsernames).toContain(testUser2.username);
+
         expect(createdLeague.duration).toEqual(leagueData.duration);
 
         const updatedUser = await User.findById(testUser.id);
         expect(updatedUser?.leagues.length).toEqual(1);
-        
-        const updatedUser2 = await User.findById(testUser2.id);
-        expect(updatedUser2?.leagues.length).toEqual(1)
 
+        const updatedUser2 = await User.findById(testUser2.id);
+        expect(updatedUser2?.leagues.length).toEqual(1);
     });
 
     test('Add user to the league successfully if admin, updates user as well', async () => {
@@ -179,8 +184,8 @@ describe('League Endpoints', () => {
             .expect(403);
 
         const updatedUser = await User.findById(hessuHopo.id);
-        expect(updatedUser?.leagues.length).toEqual(0);   
-        });
+        expect(updatedUser?.leagues.length).toEqual(0);
+    });
 
     test('Add invalid user throws error 404', async () => {
         await request(app)
@@ -190,7 +195,7 @@ describe('League Endpoints', () => {
             .expect(404);
     });
 
-    test('should remove a game from the league successfully, updates user', async () => { 
+    test('should remove a game from the league successfully, updates user', async () => {
         expect(testUser.matches.length).toEqual(1);
         expect(testUser2.matches.length).toEqual(1);
         expect(league.matches.length).toEqual(1);
@@ -216,7 +221,7 @@ describe('League Endpoints', () => {
             .expect(204);
     });
 
-    test('should not remove game if user is not part of the game', async () => { 
+    test('should not remove game if user is not part of the game', async () => {
         expect(testUser.matches.length).toEqual(1);
         expect(testUser2.matches.length).toEqual(1);
         expect(league.matches.length).toEqual(1);
@@ -237,8 +242,8 @@ describe('League Endpoints', () => {
 
     test('should return 403 if token is missing', async () => {
         const response = await request(app)
-        .delete(`/api/game/remove/${nhlGame.id}`)
-        .expect(403);
+            .delete(`/api/game/remove/${nhlGame.id}`)
+            .expect(403);
     });
 
     test('should remove the league successfully', async () => {

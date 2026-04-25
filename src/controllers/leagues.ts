@@ -24,12 +24,19 @@ export const createLeague = async (req: Request, res: Response) => {
     });
     console.log(league);
 
-    userIds.map(async (id) => {
-        await User.findByIdAndUpdate(id, { $push: { leagues: league._id } });
-    });
+    // Use Promise.all to safely await all asynchronous database updates
+    await Promise.all(
+        userIds.map(async (id) => {
+            await User.findByIdAndUpdate(id, { $push: { leagues: league._id } });
+        })
+    );
 
     await league.save();
-    res.status(201).json(league);
+
+    // Populate the league using your existing helper function before returning
+    const populatedLeague = await populateLeague(league);
+
+    res.status(201).json(populatedLeague);
 };
 
 export const putUserToLeague: MiddleWare = async (req, res, next) => {

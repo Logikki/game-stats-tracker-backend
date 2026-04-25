@@ -19,6 +19,7 @@ export const createGame = async (req: Request, res: Response) => {
         league,
         gameType
     } = req.body;
+
     const userHomePlayer = await User.findOne({ username: homePlayer });
     const userAwayPlayer = await User.findOne({ username: awayPlayer });
     const leagueItem = await League.findOne({ _id: league });
@@ -75,8 +76,10 @@ export const createGame = async (req: Request, res: Response) => {
     });
 
     await game.save();
+
     await userHomePlayer.updateOne({ $push: { matches: game } });
     await userAwayPlayer.updateOne({ $push: { matches: game } });
+
     if (leagueItem) {
         console.log('Adding game to league');
         await leagueItem.updateOne({
@@ -84,13 +87,19 @@ export const createGame = async (req: Request, res: Response) => {
         });
     }
 
+    await game.populate([
+        { path: 'homePlayer', select: 'username profileVisibility' },
+        { path: 'awayPlayer', select: 'username profileVisibility' }
+    ]);
+
     res.status(201).json(game);
 };
 
 export const getGames = async (_req: Request, res: Response) => {
+    // Note: You may want to add 'profileVisibility' here too so the GET endpoint matches your POST structure exactly
     const games = await BaseGame.find()
-        .populate({ path: 'homePlayer', select: 'username' })
-        .populate({ path: 'awayPlayer', select: 'username' });
+        .populate({ path: 'homePlayer', select: 'username profileVisibility' })
+        .populate({ path: 'awayPlayer', select: 'username profileVisibility' });
     res.json(games);
 };
 

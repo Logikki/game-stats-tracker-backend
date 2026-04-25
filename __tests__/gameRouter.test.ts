@@ -69,8 +69,8 @@ describe('Game Creation Endpoints', () => {
 
     test('should create a new NHL game with valid data', async () => {
         const response = await request(app).post('/api/game')
-        .send({...validGameData, gameType: GameType.NHL})
-        .expect(201);
+            .send({...validGameData, gameType: GameType.NHL})
+            .expect(201);
 
         expect(response.body.gameType).toBe(GameType.NHL);
         expect(response.body).toHaveProperty('id');
@@ -78,8 +78,10 @@ describe('Game Creation Endpoints', () => {
         expect(response.body.awayTeam).toBe(validGameData.awayTeam);
         expect(response.body.homeScore).toBe(validGameData.homeScore);
         expect(response.body.awayScore).toBe(validGameData.awayScore);
-        expect(response.body.homePlayer).toBe(homeUser.id);
-        expect(response.body.awayPlayer).toBe(awayUser.id);
+
+        expect(response.body.homePlayer.id).toBe(homeUser.id);
+        expect(response.body.awayPlayer.id).toBe(awayUser.id);
+
         expect(response.body.createdAt).toBeDefined();
         expect(response.body.overTime).toBe(false);
         expect(response.body.penalties).toBe(false);
@@ -87,16 +89,16 @@ describe('Game Creation Endpoints', () => {
 
     test('should return 400 if required fields are missing for NHL game', async () => {
         const response = await request(app).post('/api/game')
-        .send({ homeTeam: 'Team A', gameType: GameType.NHL })
-        .expect(400);
+            .send({ homeTeam: 'Team A', gameType: GameType.NHL })
+            .expect(400);
 
         expect(response.body).toHaveProperty('error');
     });
 
     test('should create a new FIFA game with valid data', async () => {
         const response = await request(app).post('/api/game')
-        .send({...validGameData, gameType: GameType.FIFA, overTime: true, penalties: true})
-        .expect(201);
+            .send({...validGameData, gameType: GameType.FIFA, overTime: true, penalties: true})
+            .expect(201);
 
         expect(response.body.gameType).toBe(GameType.FIFA);
         expect(response.body).toHaveProperty('id');
@@ -104,8 +106,10 @@ describe('Game Creation Endpoints', () => {
         expect(response.body.awayTeam).toBe(validGameData.awayTeam);
         expect(response.body.homeScore).toBe(validGameData.homeScore);
         expect(response.body.awayScore).toBe(validGameData.awayScore);
-        expect(response.body.homePlayer).toBe(homeUser.id);
-        expect(response.body.awayPlayer).toBe(awayUser.id);
+
+        expect(response.body.homePlayer.id).toBe(homeUser.id);
+        expect(response.body.awayPlayer.id).toBe(awayUser.id);
+
         expect(response.body.createdAt).toBeDefined();
         expect(response.body.overTime).toBe(true);
         expect(response.body.penalties).toBe(true);
@@ -130,8 +134,10 @@ describe('Game Creation Endpoints', () => {
         expect(response.body.homeTeam).toBe(gameData.homeTeam);
         expect(response.body.homeScore).toBe(gameData.homeScore);
         expect(response.body.awayScore).toBe(gameData.awayScore);
-        expect(response.body.homePlayer).toBe(homeUser.id);
-        expect(response.body.awayPlayer).toBe(awayUser.id);
+
+        expect(response.body.homePlayer.id).toBe(homeUser.id);
+        expect(response.body.awayPlayer.id).toBe(awayUser.id);
+
         expect(response.body.createdAt).toBeDefined();
         expect(response.body.overTime).toBeNull();
         expect(response.body.penalties).toBeNull();
@@ -171,8 +177,8 @@ describe('Game Creation Endpoints', () => {
 
     test('should return 400 if required fields are missing for FIFA game', async () => {
         const response = await request(app)
-        .post('/api/game').send({ homeTeam: 'Team X' })
-        .expect(400);
+            .post('/api/game').send({ homeTeam: 'Team X' })
+            .expect(400);
 
         expect(response.body).toHaveProperty('error');
     });
@@ -180,9 +186,9 @@ describe('Game Creation Endpoints', () => {
 
     test('should return 403 if user is missing', async () => {
         const response = await request(app)
-        .post('/api/game')
-        .send({...validGameData, homePlayer: 'Ropert Pattinson', gameType: GameType.NHL})
-        .expect(404);
+            .post('/api/game')
+            .send({...validGameData, homePlayer: 'Ropert Pattinson', gameType: GameType.NHL})
+            .expect(404);
 
         expect(response.body).toHaveProperty('error');
     });

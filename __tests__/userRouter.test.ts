@@ -145,12 +145,12 @@ describe('User Registration Endpoints', () => {
 
     test('should hash the password before saving', async () => {
         const password = testUser.password;
-        
+
         await request(app)
             .post('/api/user')
             .send(testUser)
             .expect(201);
-        
+
         const savedUser = await User.findOne({ username: testUser.username });
 
         expect(savedUser).not.toBeNull();
@@ -169,8 +169,8 @@ describe('User Registration Endpoints', () => {
             .send(gameData.nhl)
             .expect(201);
 
-        expect(response.body.homePlayer).toBe(userIds.homePlayerId);
-        expect(response.body.awayPlayer).toBe(userIds.awayPlayerId);
+        expect(response.body.homePlayer.id).toBe(userIds.homePlayerId);
+        expect(response.body.awayPlayer.id).toBe(userIds.awayPlayerId);
 
         const updatedUser = await User.findById(myUserResponse.body.id);
         expect(updatedUser!.matches.length).toEqual(1);
@@ -187,8 +187,8 @@ describe('User Registration Endpoints', () => {
             .send(gameData.fifa)
             .expect(201);
 
-        expect(response.body.homePlayer).toBe(userIds.homePlayerId);
-        expect(response.body.awayPlayer).toBe(userIds.awayPlayerId);
+        expect(response.body.homePlayer.id).toBe(userIds.homePlayerId);
+        expect(response.body.awayPlayer.id).toBe(userIds.awayPlayerId);
 
         const updatedUser = await User.findById(myUserResponse.body.id);
         expect(updatedUser!.matches.length).toEqual(1);
@@ -199,13 +199,13 @@ describe('User Registration Endpoints', () => {
 
         const gameResponse = await request(app).post('/api/game')
             .send(gameData.nhl)
-            .expect(201);        
-        
+            .expect(201);
+
         const loginResponse = await request(app)
             .post('/api/login')
             .send({ username: myUser.username, password: myUser.password })
             .expect(200);
-    
+
         authToken = loginResponse.body.token;
 
         const userResponse = await request(app)
@@ -219,7 +219,7 @@ describe('User Registration Endpoints', () => {
         expect(body.name).toEqual(myUser.name);
         expect(body.id).toEqual(myUserResponse.body.id);
         expect(body.leagues).toBeDefined();
-        
+
         expect(body.matches.length).toBe(1);
         expect(body.matches[0].id).toBe(gameResponse.body.id);
 
@@ -232,7 +232,7 @@ describe('User Registration Endpoints', () => {
         expect(body.matches[0].awayPlayer.id).toBe(testUserResponse.body.id);
         expect(body.matches[0].awayPlayer.leagues).toBeUndefined();
         expect(body.matches[0].awayPlayer.matches).toBeUndefined();
-        });
+    });
 
     test('Get own user user fails if not logged in', async () => {
         await request(app)
@@ -244,7 +244,7 @@ describe('User Registration Endpoints', () => {
             .post('/api/login')
             .send({ username: myUser.username, password: "wrong pass" })
             .expect(401);
-    
+
         authToken = loginResponse.body.token;
 
         await request(app)
@@ -306,12 +306,12 @@ describe('user visibility, friend requests', () => {
             homePlayer: homeUser.id,
             awayPlayer: testUser.id,
         });
-        
-        const loginResponse = await request(app)
-        .post('/api/login')
-        .send({ username: homeUser.username, password: "password123" });
 
-    authToken = loginResponse.body.token;
+        const loginResponse = await request(app)
+            .post('/api/login')
+            .send({ username: homeUser.username, password: "password123" });
+
+        authToken = loginResponse.body.token;
     });
 
     afterEach(async () => {
@@ -332,7 +332,7 @@ describe('user visibility, friend requests', () => {
             .set('Authorization', `Bearer ${authToken}`)
             .send({ visibility: ProfileVisibility.Public })
             .expect(200);
-        
+
         const updatedUser = await User.findById(homeUser.id);
         expect(updatedUser!.profileVisibility).toEqual(ProfileVisibility.Public);
     });
@@ -402,87 +402,87 @@ describe('user visibility, friend requests', () => {
             .post(`/api/user/friend-request/${testUser.username}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
-    
+
         expect(response.body.message).toBe('Friend request sent');
-    
+
         const updatedTestUser = await User.findById(testUser.id);
         expect(updatedTestUser!.friendRequests[0].toString()).toBe(homeUser.id);
     });
-    
+
     test('should not send a friend request to yourself', async () => {
         await request(app)
             .post(`/api/user/friend-request/${homeUser.username}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(400);
     });
-    
+
     test('should not send a duplicate friend request', async () => {
         await request(app)
             .post(`/api/user/friend-request/${testUser.username}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
-    
+
         await request(app)
             .post(`/api/user/friend-request/${testUser.username}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(400);
     });
-    
+
     test('should accept a friend request', async () => {
         testUser.friendRequests.push(homeUser.id);
         await testUser.save();
-    
+
         const loginResponse = await request(app)
             .post('/api/login')
             .send({ username: testUser.username, password: "password123" });
-        
+
         const testAuthToken = loginResponse.body.token;
-    
+
         await request(app)
             .post(`/api/user/friend-request/accept/${homeUser.username}`)
             .set('Authorization', `Bearer ${testAuthToken}`)
             .expect(200);
-    
+
         const updatedHomeUser = await User.findById(homeUser.id);
         const updatedTestUser = await User.findById(testUser.id);
-    
+
         expect(updatedHomeUser!.friends[0].toString()).toBe(testUser.id);
         expect(updatedTestUser!.friends[0].toString()).toBe(homeUser.id);
     });
-    
+
     test('should reject a friend request', async () => {
         testUser.friendRequests.push(homeUser.id);
         await testUser.save();
-    
+
         const loginResponse = await request(app)
             .post('/api/login')
             .send({ username: testUser.username, password: "password123" });
-        
+
         const testAuthToken = loginResponse.body.token;
-    
+
         await request(app)
             .delete(`/api/user/friend-request/reject/${homeUser.username}`)
             .set('Authorization', `Bearer ${testAuthToken}`)
             .expect(200);
-    
+
         const updatedTestUser = await User.findById(testUser);
         expect(updatedTestUser!.friendRequests).not.toContainEqual(homeUser._id);
     });
-    
+
     test('should remove a friend', async () => {
         homeUser.friends.push(testUser.id);
         testUser.friends.push(homeUser.id);
         await homeUser.save();
         await testUser.save();
-    
+
         await request(app)
             .delete(`/api/user/friend/${testUser.username}`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
-    
+
         const updatedHomeUser = await User.findById(homeUser.id);
         const updatedTestUser = await User.findById(testUser.id);
-    
+
         expect(updatedHomeUser!.friends).not.toContainEqual(testUser.id);
         expect(updatedTestUser!.friends).not.toContainEqual(homeUser.id);
     });
