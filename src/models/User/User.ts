@@ -78,8 +78,10 @@ UserSchema.methods.isVisibleTo = function(this: IUser, ownUser: IUser): boolean 
 
 UserSchema.set('toJSON', {
     transform: (document, returnedObject: Record<string, any>) => {
-        returnedObject.id = returnedObject._id.toString();
-        delete returnedObject._id;
+        if (returnedObject._id) {
+            returnedObject.id = returnedObject._id.toString();
+            delete returnedObject._id;
+        }
         delete returnedObject.__v;
         delete returnedObject.passwordHash;
     }

@@ -1,0 +1,36 @@
+@baseUrl = http://localhost:3000/api
+@targetUsername = testeri
+
+### ---------------------------------------------------
+### 1. AUTHENTICATION (Run this first)
+### ---------------------------------------------------
+
+# @name loginUser
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "username": "testeri2",
+    "password": "salainenmikitin"
+}
+
+### ---------------------------------------------------
+### 2. AUTOMATED TOKEN EXTRACTION
+### ---------------------------------------------------
+# This automatically grabs the token from the response of 'loginUser' above!
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGVyaTIiLCJ1c2VybmFtZSI6InRlc3RlcmkyIiwiaWQiOiI2OWVjYTY0ZGYxNmI1MGE1OTQxMmQ2ZTciLCJpYXQiOjE3NzcxMjA1NDAsImV4cCI6MTc3OTcxMjU0MH0.J2UTmTqfPtf6ZttDhIkG3nvUc9Rhz6IeWf2mTexDtKI
+
+
+### ---------------------------------------------------
+### 3. AUTOMATED REQUESTS (Run these second)
+### ---------------------------------------------------
+
+### Send a friend request
+POST {{baseUrl}}/user/friend-request/{{targetUsername}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Accept a friend request
+POST {{baseUrl}}/user/friend-request/accept/{{targetUsername}}
+Content-Type: application/json
+Authorization: Bearer {{token}}

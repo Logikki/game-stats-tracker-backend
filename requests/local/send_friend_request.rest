@@ -1,0 +1,52 @@
+@baseUrl = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdGVyaSIsInVzZXJuYW1lIjoidGVzdGVyaSIsImlkIjoiNjdkZWE2OWYxZDdlYjQ3MGFhNjUyNDU0IiwiaWF0IjoxNzc3MTE4NTg4LCJleHAiOjE3Nzk3MTA1ODh9.6yub1_FVLwu0HHHOm31oteU-o0eZh9UzCho_KFEF6Po
+@targetUsername = testeri2
+
+### ---------------------------------------------------
+### Friend Request Routes
+### ---------------------------------------------------
+
+### 1. Send a friend request
+POST {{baseUrl}}/user/friend-request/{{targetUsername}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### 2. Accept a friend request
+POST {{baseUrl}}/user/friend-request/accept/{{targetUsername}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### 3. Reject a friend request
+DELETE {{baseUrl}}/user/friend-request/reject/{{targetUsername}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### 4. Remove an existing friend
+DELETE {{baseUrl}}/user/friend/{{targetUsername}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### ---------------------------------------------------
+### Useful Helper Requests for Testing
+### ---------------------------------------------------
+
+### Helper: Login to get a token for User 1
+# @name loginUser1
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "username": "testeri",
+    "password": "salainenmikitin"
+}
+
+### Helper: Login to get a token for User 2
+# @name loginUser2
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "username": "testeri2",
+    "password": "salainenmikitin"
+}

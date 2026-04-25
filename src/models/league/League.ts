@@ -23,7 +23,10 @@ const LeagueSchema: Schema = new Schema({
 
 LeagueSchema.set('toJSON', {
     transform: (document, returnedObject: Record<string, any>) => {
-        returnedObject.id = returnedObject._id.toString();
+        if (returnedObject._id) {
+            returnedObject.id = returnedObject._id.toString();
+            delete returnedObject._id;
+        }
         delete returnedObject._id;
         delete returnedObject.__v;
     }

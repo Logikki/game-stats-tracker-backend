@@ -1,7 +1,9 @@
-POST http://localhost:3000/api/login
+POST http://localhost:3000/api/user
 Content-Type: application/json
 
 {
     "username": "testeri2",
+    "name": "testeri2",
+    "email": "testeri2@luukku.fi",
     "password": "salainenmikitin"
 }
