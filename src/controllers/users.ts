@@ -38,21 +38,22 @@ export const getOwnUser: MiddleWare = async (req, res, _) => {
 export const getUser: MiddleWare = async (req, res, _) => {
     const ownUser = req.user;
     const { username } = req.params;
-    console.log('username: ', username);
 
-    const userToGet = await User.findOne({ username: username });
+    const userToGet = await User.findOne({ username });
     if (!ownUser || !userToGet) {
-        return res.status(404).send('Not found');
+        return res.status(404).json({ message: 'User not found' });
     }
 
     if (!userToGet.isVisibleTo(ownUser)) {
-        return res.status(403).send("Cannot view this user's profile");
+        const reason =
+            userToGet.profileVisibility === ProfileVisibility.Private ? 'private' : 'not_friends';
+        return res.status(200).json({ visible: false, username: userToGet.username, reason });
     }
 
-    console.log('User is able to see the profile');
-
-    const response = await populateUser(userToGet);
-    return res.status(200).json(response);
+    const populated = await populateUser(userToGet);
+    // Strip fields that should not be shared with other users
+    const { email, friendRequests, ...publicData } = (populated as any).toJSON();
+    return res.status(200).json({ visible: true, ...publicData });
 };
 
 // remove later
