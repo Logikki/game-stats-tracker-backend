@@ -30,8 +30,8 @@ export const createGame = async (req: Request, res: Response) => {
         !homePlayer ||
         !awayPlayer ||
         !createdAt ||
-        !homeScore ||
-        !awayScore ||
+        homeScore == null ||
+        awayScore == null ||
         !gameType
     ) {
         res.status(400).json({ error: 'All fields are required' });
@@ -43,11 +43,15 @@ export const createGame = async (req: Request, res: Response) => {
         return;
     }
 
+    if (league && !leagueItem) {
+        res.status(404).json({ error: 'This league no longer exists' });
+        return;
+    }
+
     if (!Object.values(GameType).includes(gameType)) {
         res.status(400).json({ error: 'Invalid game type' });
     }
 
-    //TODO: create own request for league games?
     if (leagueItem) {
         const isHomePlayerInLeague = leagueItem.users.some((user) =>
             user.equals(userHomePlayer.id)
