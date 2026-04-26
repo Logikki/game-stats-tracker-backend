@@ -11,6 +11,8 @@ interface IUser extends Document {
     leagues: Types.ObjectId[];
     friends: Types.ObjectId[];
     friendRequests: Types.ObjectId[];
+    profilePicture?: Buffer;
+    profilePictureContentType?: string;
     isVisibleTo(ownUser: IUser): boolean;
 }
 
@@ -48,7 +50,9 @@ const UserSchema: Schema = new Schema<IUser>({
             default: []
         }
     ],
-    friendRequests: [{ type: Types.ObjectId, ref: 'User', default: [] }]
+    friendRequests: [{ type: Types.ObjectId, ref: 'User', default: [] }],
+    profilePicture: { type: Buffer, required: false },
+    profilePictureContentType: { type: String, required: false }
 });
 
 UserSchema.methods.isVisibleTo = function(this: IUser, ownUser: IUser): boolean {
@@ -84,6 +88,8 @@ UserSchema.set('toJSON', {
         }
         delete returnedObject.__v;
         delete returnedObject.passwordHash;
+        delete returnedObject.profilePicture;
+        delete returnedObject.profilePictureContentType;
     }
 });
 

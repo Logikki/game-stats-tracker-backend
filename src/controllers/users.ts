@@ -50,10 +50,16 @@ export const getUser: MiddleWare = async (req, res, _) => {
         return res.status(200).json({ visible: false, username: userToGet.username, reason });
     }
 
+    // Reload with avatar field before populating the rest
+    const userWithAvatar = await User.findById(userToGet.id).select('+profilePicture +profilePictureContentType');
+    const avatarBase64 = userWithAvatar?.profilePicture
+        ? userWithAvatar.profilePicture.toString('base64')
+        : null;
+
     const populated = await populateUser(userToGet);
     // Strip fields that should not be shared with other users
     const { email, friendRequests, ...publicData } = (populated as any).toJSON();
-    return res.status(200).json({ visible: true, ...publicData });
+    return res.status(200).json({ visible: true, avatarBase64, ...publicData });
 };
 
 // remove later

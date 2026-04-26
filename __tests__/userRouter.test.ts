@@ -349,13 +349,31 @@ describe('user visibility, friend requests', () => {
         expect(userResponse.body.name).toBe(testUser.name);
     });
 
-    test('should return 403 if profile is private', async () => {
+    test('should return 200 with visible:false and reason:private if profile is private', async () => {
         await User.findByIdAndUpdate(testUser.id, { profileVisibility: ProfileVisibility.Private });
 
-        await request(app)
+        const response = await request(app)
             .get(`/api/user/${testUser.username}`)
             .set('Authorization', `Bearer ${authToken}`)
-            .expect(403);
+            .expect(200);
+
+        expect(response.body.visible).toBe(false);
+        expect(response.body.username).toBe(testUser.username);
+        expect(response.body.reason).toBe('private');
+        expect(response.body.matches).toBeUndefined();
+    });
+
+    test('should return 200 with visible:false and reason:not_friends if profile is friends-only', async () => {
+        await User.findByIdAndUpdate(testUser.id, { profileVisibility: ProfileVisibility.Friends });
+
+        const response = await request(app)
+            .get(`/api/user/${testUser.username}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+
+        expect(response.body.visible).toBe(false);
+        expect(response.body.username).toBe(testUser.username);
+        expect(response.body.reason).toBe('not_friends');
     });
 
     test('should return 403 if not authenticated', async () => {
