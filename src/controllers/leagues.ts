@@ -6,27 +6,30 @@ import { MiddleWare } from '../common/interfaces/express';
 import { populateLeague } from '../common/populate';
 
 export const createLeague = async (req: Request, res: Response) => {
-    const userIds = await resolveUsers(req.body.users);
-    const admins = await resolveUsers(req.body.admins);
+    const userIds = await resolveUsers(req.body.users ?? []);
+    const adminIds = await resolveUsers(req.body.admins ?? []);
 
     if (!req.body.name || !req.body.duration || !req.body.gameTypes) {
         res.status(401).json({ message: 'Missing required fields' });
         return;
     }
 
+    // Admins are implicitly members — deduplicate the combined member list
+    const allMemberIds = [
+        ...new Map([...userIds, ...adminIds].map((id) => [id.toString(), id])).values()
+    ];
+
     const league = new League({
-        users: userIds,
-        admins: admins,
+        users: allMemberIds,
+        admins: adminIds,
         description: req.body.description,
         name: req.body.name,
         duration: req.body.duration,
         gameTypes: req.body.gameTypes
     });
-    console.log(league);
 
-    // Use Promise.all to safely await all asynchronous database updates
     await Promise.all(
-        userIds.map(async (id) => {
+        allMemberIds.map(async (id) => {
             await User.findByIdAndUpdate(id, { $push: { leagues: league._id } });
         })
     );
@@ -46,6 +49,11 @@ export const putUserToLeague: MiddleWare = async (req, res, next) => {
 
     if (!league || !userToAdd) {
         res.status(404).json({ message: 'Missing required fields' });
+        return;
+    }
+
+    if (league.users.some((id) => id.toString() === userToAdd.id)) {
+        res.status(400).json({ message: 'User is already a member of this league' });
         return;
     }
 
