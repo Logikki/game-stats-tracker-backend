@@ -3,6 +3,14 @@ import { acceptLeagueInvitation, createLeagueInvitation } from './controllers/in
 import { createLeague, deleteLeague, putUserToLeague } from './controllers/leagues';
 import { login } from './controllers/login';
 import { getAvatar, uploadAvatar, deleteAvatar } from './controllers/avatar';
+import {
+    registerPublicKey,
+    getLeaguePublicKeys,
+    getMessages,
+    sendMessage,
+    deleteMessage,
+    getMessageImage
+} from './controllers/chat';
 import multer from 'multer';
 import {
     acceptFriendRequest,
@@ -19,6 +27,7 @@ import {
     attachUser,
     validateAdmin,
     validateLeagueInvitation,
+    validateLeagueMembership,
     validateToken,
     validateUserIsPartOfGame
 } from './utils/middleware';
@@ -94,5 +103,19 @@ router.delete(
 // for testing
 router.get('/game', getGames);
 router.get('/users', getUsers);
+
+// chat routes — /chat/keys must come before /chat/:leagueId
+const chatUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_, file, cb) => cb(null, file.mimetype.startsWith('image/'))
+});
+
+router.post('/chat/keys', validateToken, attachUser, registerPublicKey);
+router.get('/chat/keys/:leagueId', validateToken, attachUser, validateLeagueMembership, getLeaguePublicKeys);
+router.get('/chat/:leagueId', validateToken, attachUser, validateLeagueMembership, getMessages);
+router.post('/chat/:leagueId', validateToken, attachUser, validateLeagueMembership, chatUpload.single('image'), sendMessage);
+router.delete('/chat/:leagueId/:messageId', validateToken, attachUser, validateLeagueMembership, deleteMessage);
+router.get('/chat/:leagueId/:messageId/image', validateToken, attachUser, validateLeagueMembership, getMessageImage);
 
 export default router;

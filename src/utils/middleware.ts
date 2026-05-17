@@ -72,6 +72,26 @@ export const validateUserIsPartOfGame: MiddleWare = async (req, res, next) => {
     next();
 };
 
+export const validateLeagueMembership: MiddleWare = async (req, res, next) => {
+    const user = req.user;
+    const league = await League.findById(req.params.leagueId);
+    if (!league) {
+        res.status(404).json({ error: 'League not found' });
+        return;
+    }
+    if (!user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    const isMember = league.users.some((id) => id.equals(user.id));
+    if (!isMember) {
+        res.status(403).json({ error: 'Not a member of this league' });
+        return;
+    }
+    req.league = league;
+    next();
+};
+
 export const validateLeagueInvitation: MiddleWare = async (req, res, next) => {
     const user = req.user;
     const code = req.params.invitationCode;
